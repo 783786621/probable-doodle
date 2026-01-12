@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭点餐+食材统计</title>
+    <style>
+        * {margin: 0; padding: 0; box-sizing: border-box; font-family: 微软雅黑;}
+        body {max-width: 700px; margin: 0 auto; padding: 20px; background: #f5f5f5;}
+        .container {background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;}
+        h2 {color: #2c3e50; margin-bottom: 20px; text-align: center;}
+        .dish-item {border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px;}
+        .dish-title {display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;}
+        .dish-name {font-size: 18px; font-weight: 600; color: #34495e;}
+        .dish-price {color: #e74c3c;}
+        .ingredient-item {margin: 5px 0; font-size: 14px; color: #7f8c8d;}
+        .count-input {width: 60px; padding: 5px; margin-left: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center;}
+        .btn {padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;}
+        .btn-primary {background: #3498db; color: white;}
+        .btn-danger {background: #e74c3c; color: white;}
+        .btn-add {background: #2ecc71; color: white; margin-bottom: 15px;}
+        .total-ingredients {background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;}
+        .total-title {font-weight: 600; margin-bottom: 10px; color: #2c3e50;}
+        .ingredient-total-item {padding: 5px 0; border-bottom: 1px dashed #eee;}
+        .modal {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 999;}
+        .modal-content {background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px;}
+        .form-item {margin-bottom: 15px;}
+        .form-item label {display: block; margin-bottom: 5px; color: #34495e;}
+        .form-item input {width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;}
+        .ingredient-add-box {margin-top: 10px; padding: 10px; border: 1px dashed #ddd; border-radius: 4px;}
+        .ingredient-list {margin-top: 10px;}
+    </style>
+</head>
+<body>
+    <!-- 点餐统计区 -->
+    <div class="container">
+        <h2>🍽️ 家庭点餐+食材统计</h2>
+        <button class="btn btn-add" onclick="openAddDishModal()">+ 添加新菜品</button>
+        <div id="dishList">
+            <!-- 菜品列表会自动生成 -->
+        </div>
+        <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="calculateTotalIngredients()">📊 统计食材总用量</button>
+        
+        <!-- 食材统计结果 -->
+        <div class="total-ingredients" id="totalIngredients" style="display: none;">
+            <div class="total-title">🛒 买菜清单（总用量）</div>
+            <div id="ingredientTotalList"></div>
+        </div>
+    </div>
+
+    <!-- 添加/修改菜品弹窗 -->
+    <div class="modal" id="dishModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">添加新菜品</h3>
+            <input type="hidden" id="editDishId">
+            <div class="form-item">
+                <label>菜品名称：</label>
+                <input type="text" id="dishName" placeholder="比如：可乐鸡翅">
+            </div>
+            <div class="form-item">
+                <label>菜品价格（元）：</label>
+                <input type="number" id="dishPrice" placeholder="比如：38" min="0">
+            </div>
+            <div class="form-item">
+                <label>菜品配料（格式：食材名 用量，多个用逗号分隔）：</label>
+                <input type="text" id="dishIngredients" placeholder="比如：鸡翅 500g,姜 10g,可乐 200ml,蒜 5g">
+                <small style="color: #999;">示例：鱼 1条,小米辣 5个,姜 15g,蒜 10g</small>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-danger" onclick="closeDishModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveDish()">保存菜品</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 存储菜品数据（本地存储，刷新不丢失）
+        let dishData = JSON.parse(localStorage.getItem('familyDishData')) || [
+            // 初始示例菜品
+            {
+                id: 1,
+                name: "可乐鸡翅",
+                price: 38,
+                ingredients: "鸡翅 500g,姜 10g,可乐 200ml,蒜 5g"
+            },
+            {
+                id: 2,
+                name: "番茄炒蛋",
+                price: 18,
+                ingredients: "番茄 2个,鸡蛋 3个,盐 2g,糖 5g"
+            },
+            {
+                id: 3,
+                name: "清蒸鲈鱼",
+                price: 45,
+                ingredients: "鲈鱼 1条,姜 15g,蒜 10g,小米辣 3个,葱 1根"
+            }
+        ];
+
+        // 页面加载时渲染菜品列表
+        window.onload = function() {
+            renderDishList();
+        };
+
+        // 渲染菜品列表
+        function renderDishList() {
+            const dishListEl = document.getElementById('dishList');
+            dishListEl.innerHTML = '';
+
+            dishData.forEach(dish => {
+                // 解析配料
+                const ingredients = dish.ingredients.split(',').map(item => item.trim());
+                
+                let ingredientHtml = '';
+                ingredients.forEach(ing => {
+                    ingredientHtml += `<div class="ingredient-item">🔸 ${ing}</div>`;
+                });
+
+                // 生成菜品项
+                const dishItem = `
+                    <div class="dish-item" id="dish_${dish.id}">
+                        <div class="dish-title">
+                            <span class="dish-name">${dish.name}</span>
+                            <span class="dish-price">¥${dish.price}</span>
+                        </div>
+                        <div>${ingredientHtml}</div>
+                        <div style="margin-top: 10px; display: flex; align-items: center;">
+                            <span>份数：</span>
+                            <input type="number" class="count-input" id="count_${dish.id}" value="0" min="0">
+                            <div style="margin-left: auto; display: flex; gap: 8px;">
+                                <button class="btn btn-primary" onclick="editDish(${dish.id})">修改</button>
+                                <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                dishListEl.innerHTML += dishItem;
+            });
+
+            // 保存数据到本地
+            localStorage.setItem('familyDishData', JSON.stringify(dishData));
+        }
+
+        // 打开添加菜品弹窗
+        function openAddDishModal() {
+            document.getElementById('modalTitle').innerText = '添加新菜品';
+            document.getElementById('editDishId').value = '';
+            document.getElementById('dishName').value = '';
+            document.getElementById('dishPrice').value = '';
+            document.getElementById('dishIngredients').value = '';
+            document.getElementById('dishModal').style.display = 'flex';
+        }
+
+        // 关闭弹窗
+        function closeDishModal() {
+            document.getElementById('dishModal').style.display = 'none';
+        }
+
+        // 保存菜品（新增/修改）
+        function saveDish() {
+            const dishName = document.getElementById('dishName').value.trim();
+            const dishPrice = document.getElementById('dishPrice').value.trim();
+            const dishIngredients = document.getElementById('dishIngredients').value.trim();
+            const editDishId = document.getElementById('editDishId').value;
+
+            // 验证必填项
+            if (!dishName || !dishPrice || !dishIngredients) {
+                alert('菜品名称、价格、配料都不能为空！');
+                return;
+            }
+
+            if (editDishId) {
+                // 修改现有菜品
+                const index = dishData.findIndex(d => d.id == editDishId);
+                dishData[index] = {
+                    id: parseInt(editDishId),
+                    name: dishName,
+                    price: parseFloat(dishPrice),
+                    ingredients: dishIngredients
+                };
+            } else {
+                // 新增菜品（自动生成ID）
+                const newId = dishData.length > 0 ? Math.max(...dishData.map(d => d.id)) + 1 : 1;
+                dishData.push({
+                    id: newId,
+                    name: dishName,
+                    price: parseFloat(dishPrice),
+                    ingredients: dishIngredients
+                });
+            }
+
+            // 重新渲染列表并关闭弹窗
+            renderDishList();
+            closeDishModal();
+            alert('菜品保存成功！');
+        }
+
+        // 编辑菜品
+        function editDish(dishId) {
+            const dish = dishData.find(d => d.id === dishId);
+            if (!dish) return;
+
+            document.getElementById('modalTitle').innerText = '修改菜品';
+            document.getElementById('editDishId').value = dishId;
+            document.getElementById('dishName').value = dish.name;
+            document.getElementById('dishPrice').value = dish.price;
+            document.getElementById('dishIngredients').value = dish.ingredients;
+            document.getElementById('dishModal').style.display = 'flex';
+        }
+
+        // 删除菜品
+        function deleteDish(dishId) {
+            if (confirm('确定要删除这个菜品吗？')) {
+                dishData = dishData.filter(d => d.id !== dishId);
+                renderDishList();
+                alert('菜品删除成功！');
+            }
+        }
+
+        // 统计食材总用量
+        function calculateTotalIngredients() {
+            const totalIngredients = {};
+
+            // 遍历所有菜品，计算配料总用量
+            dishData.forEach(dish => {
+                const count = parseInt(document.getElementById(`count_${dish.id}`).value) || 0;
+                if (count <= 0) return;
+
+                // 解析配料
+                const ingredients = dish.ingredients.split(',').map(item => item.trim());
+                ingredients.forEach(ing => {
+                    // 拆分食材名和用量（处理“鱼 1条”“姜 15g”等格式）
+                    const [name, unitAmount] = ing.split(/\s+/);
+                    if (!name || !unitAmount) return;
+
+                    // 提取数字和单位（比如“500g”拆成500和g，“1条”拆成1和条）
+                    const num = parseFloat(unitAmount.match(/\d+(\.\d+)?/)[0]);
+                    const unit = unitAmount.replace(/\d+(\.\d+)?/, '').trim();
+                    const totalNum = num * count;
+
+                    // 汇总
+                    if (totalIngredients[name]) {
+                        // 同单位直接加，不同单位暂存（家庭用默认同单位）
+                        if (totalIngredients[name].unit === unit) {
+                            totalIngredients[name].amount += totalNum;
+                        } else {
+                            totalIngredients[name].amount = `${totalIngredients[name].amount}${totalIngredients[name].unit} + ${totalNum}${unit}`;
+                        }
+                    } else {
+                        totalIngredients[name] = {
+                            amount: totalNum,
+                            unit: unit
+                        };
+                    }
+                });
+            });
+
+            // 渲染统计结果
+            const totalListEl = document.getElementById('ingredientTotalList');
+            totalListEl.innerHTML = '';
+
+            if (Object.keys(totalIngredients).length === 0) {
+                totalListEl.innerHTML = '<div style="text-align: center; color: #999;">暂无选中的菜品，请先选择份数～</div>';
+            } else {
+                for (const [name, info] of Object.entries(totalIngredients)) {
+                    let amountStr = typeof info.amount === 'number' ? `${info.amount}${info.unit}` : info.amount;
+                    totalListEl.innerHTML += `<div class="ingredient-total-item">✅ ${name}：${amountStr}</div>`;
+                }
+            }
+
+            // 显示统计结果
+            document.getElementById('totalIngredients').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
