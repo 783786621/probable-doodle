@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>家庭菜谱与买菜清单 (川湘融合版)</title>
+    <title>家庭菜谱 & 买菜清单 (完整版)</title>
     <style>
         :root {
             --primary: #ff6700; /* 美团橙 */
@@ -477,19 +477,39 @@
             { id: 'other', name: '其他', icon: 'fa-ellipsis-h' }
         ];
 
-        // 2. 海量数据初始化 (川湘菜融合 + 完整火锅清单)
-        let dishData = JSON.parse(localStorage.getItem('familyDishData')) || [
-            // ================= 【荤菜类】(川湘融合) =================
-            { id: 101, name: '小炒黄牛肉', cat: 'meat', ingredients: '黄牛肉:300g,杭椒:100g,小米辣:30g,姜蒜:20g,生抽:20ml,蚝油:10g', method: '湘菜经典。牛肉逆纹切薄片，腌制上浆。大火快炒牛肉变色即出锅，再炒香辣椒姜蒜，倒回牛肉翻炒调味。', count: 0 },
-            { id: 102, name: '回锅肉', cat: 'meat', ingredients: '五花肉:400g,青蒜苗:2根,郫县豆瓣酱:20g,甜面酱:10g,豆豉:10g', method: '川菜经典。五花肉冷水下锅煮至断生，切薄片。热锅少油煸炒肉片至灯盏窝状，下豆瓣酱、豆豉炒出红油，加蒜苗段翻炒。', count: 0 },
+        // 2. 海量基础菜品数据 (扩充家常菜荤菜 + 完整火锅清单)
+        const BASE_DISH_DATA = [
+            // ================= 【荤菜类】(扩充版家常菜) =================
+            { id: 101, name: '小炒黄牛肉', cat: 'meat', ingredients: '黄牛肉:300g,杭椒:100g,小米辣:30g,姜蒜:20g,生抽:20ml,蚝油:10g', method: '牛肉逆纹切薄片，腌制上浆。大火快炒牛肉变色即出锅，再炒香辣椒姜蒜，倒回牛肉翻炒调味。', count: 0 },
+            { id: 102, name: '回锅肉', cat: 'meat', ingredients: '五花肉:400g,青蒜苗:2根,郫县豆瓣酱:20g,甜面酱:10g,豆豉:10g', method: '五花肉冷水下锅煮至断生，切薄片。热锅少油煸炒肉片至灯盏窝状，下豆瓣酱、豆豉炒出红油，加蒜苗段翻炒。', count: 0 },
             { id: 103, name: '剁椒鱼头', cat: 'meat', ingredients: '胖头鱼头:1个,剁椒:80g,姜葱蒜:30g,蒸鱼豉油:30ml,料酒:15ml', method: '鱼头腌制铺剁椒，大火蒸12分钟，泼热油激香。', count: 0 },
-            { id: 104, name: '麻婆豆腐', cat: 'meat', ingredients: '嫩豆腐:1块,牛肉末:100g,郫县豆瓣酱:20g,花椒粉:5g,淀粉:10g', method: '川菜。炒香肉末和豆瓣酱，加水煮开，下豆腐煮3分钟，勾芡收汁，撒花椒粉。', count: 0 },
+            { id: 104, name: '麻婆豆腐', cat: 'meat', ingredients: '嫩豆腐:1块,牛肉末:100g,郫县豆瓣酱:20g,花椒粉:5g,淀粉:10g', method: '炒香肉末和豆瓣酱，加水煮开，下豆腐煮3分钟，勾芡收汁，撒花椒粉。', count: 0 },
             { id: 105, name: '辣子鸡', cat: 'meat', ingredients: '鸡腿肉:500g,干辣椒:100g,花椒:30g,花生米:50g,姜蒜:20g', method: '鸡肉切块腌制，炸至金黄酥脆。锅底留油炒香姜蒜花椒干辣椒，倒入鸡块翻炒调味。', count: 0 },
-            { id: 106, name: '毛氏红烧肉', cat: 'meat', ingredients: '五花肉:500g,冰糖:40g,八角桂皮:10g,酱油:20ml,料酒:50ml', method: '五花肉切块焯水，煸炒出油。炒糖色，下肉上色，加调料炖煮40分钟，大火收汁。', count: 0 },
+            { id: 106, name: '红烧肉', cat: 'meat', ingredients: '五花肉:500g,冰糖:40g,八角桂皮:10g,酱油:20ml,料酒:50ml', method: '五花肉切块焯水，煸炒出油。炒糖色，下肉上色，加调料炖煮40分钟，大火收汁。', count: 0 },
             { id: 107, name: '宫保鸡丁', cat: 'meat', ingredients: '鸡胸肉:300g,黄瓜丁:50g,胡萝卜丁:50g,花生米:50g,干辣椒:20g', method: '鸡肉切丁腌制滑油。碗汁调好（糖、醋、生抽、淀粉）。炒香姜蒜辣椒，下鸡丁和配菜，淋碗汁翻炒，最后放花生米。', count: 0 },
             { id: 108, name: '啤酒鸭', cat: 'meat', ingredients: '鸭肉:600g,啤酒:1瓶,干辣椒:20g,姜片:20g,青红椒:100g', method: '鸭肉煸炒至皮紧出油，加姜蒜辣椒炒香，倒入整瓶啤酒焖煮至软烂，收汁加青红椒。', count: 0 },
             { id: 109, name: '鱼香肉丝', cat: 'meat', ingredients: '猪里脊:250g,木耳丝:50g,胡萝卜丝:50g,笋丝:50g,泡椒:30g', method: '肉丝滑熟。炒香泡椒蒜末，下配菜和肉丝，淋入鱼香汁（糖、醋、生抽、淀粉、水）大火翻炒。', count: 0 },
-            { id: 110, name: '湘西外婆菜', cat: 'meat', ingredients: '外婆菜:200g,鸡蛋:2个,肉末:100g,干辣椒:10g', method: '炒散鸡蛋盛出。炒香肉末和干辣椒，下外婆菜炒干水分，倒入鸡蛋碎翻炒。', count: 0 },
+            { id: 110, name: '外婆菜炒蛋', cat: 'meat', ingredients: '外婆菜:200g,鸡蛋:2个,肉末:100g,干辣椒:10g', method: '炒散鸡蛋盛出。炒香肉末和干辣椒，下外婆菜炒干水分，倒入鸡蛋碎翻炒。', count: 0 },
+            { id: 111, name: '可乐鸡翅', cat: 'meat', ingredients: '鸡翅:500g,可乐:1罐,姜片:10g,生抽:20ml,料酒:10ml', method: '鸡翅焯水，煎至两面微黄。加姜片炒香，倒入可乐和生抽，小火焖煮至汤汁浓稠。', count: 0 },
+            { id: 112, name: '番茄炒蛋', cat: 'meat', ingredients: '番茄:2个,鸡蛋:3个,糖:5g,盐:3g', method: '鸡蛋炒散盛出。炒软番茄出汁，加糖调味，倒入鸡蛋翻炒均匀。', count: 0 },
+            { id: 113, name: '青椒炒肉丝', cat: 'meat', ingredients: '猪里脊:200g,青椒:2个,姜蒜:10g,生抽:15ml,淀粉:5g', method: '肉丝腌制上浆，滑炒至变色盛出。炒香姜蒜，下青椒丝炒软，倒回肉丝翻炒调味。', count: 0 },
+            { id: 114, name: '土豆烧排骨', cat: 'meat', ingredients: '排骨:500g,土豆:2个,八角:1个,冰糖:10g,生抽:20ml', method: '排骨焯水，煸炒至微黄。炒糖色，下排骨上色，加水焖煮30分钟，加入土豆再煮15分钟收汁。', count: 0 },
+            { id: 115, name: '红烧猪蹄', cat: 'meat', ingredients: '猪蹄:1只,八角桂皮:10g,冰糖:20g,料酒:30ml,生抽:20ml', method: '猪蹄焯水去血沫，煸炒至皮紧。加调料炒香，加水焖煮1.5小时至软烂，大火收汁。', count: 0 },
+            { id: 116, name: '清炖鸡汤', cat: 'meat', ingredients: '土鸡:半只,红枣:3颗,枸杞:10粒,姜片:10g,盐:5g', method: '鸡肉焯水，加水和姜片炖煮1小时，加红枣枸杞再煮20分钟，加盐调味。', count: 0 },
+            { id: 117, name: '蒜薹炒肉', cat: 'meat', ingredients: '五花肉:200g,蒜薹:300g,生抽:10ml,盐:3g', method: '五花肉煸炒出油，下蒜薹翻炒至断生，加盐和生抽调味。', count: 0 },
+            { id: 118, name: '水煮肉片', cat: 'meat', ingredients: '猪里脊:300g,生菜:200g,干辣椒:20g,花椒:10g,郫县豆瓣酱:20g', method: '肉片腌制上浆，生菜铺碗底。炒香豆瓣酱，加水煮开，滑入肉片煮熟，倒入碗中，泼热油激香花椒辣椒。', count: 0 },
+            { id: 119, name: '清蒸鲈鱼', cat: 'meat', ingredients: '鲈鱼:1条,姜葱:20g,蒸鱼豉油:30ml,料酒:10ml', method: '鱼身划刀，铺葱姜，淋料酒，大火蒸8分钟。倒掉汤汁，淋蒸鱼豉油，泼热油。', count: 0 },
+            { id: 120, name: '红烧鱼块', cat: 'meat', ingredients: '草鱼:500g,姜片:10g,干辣椒:5个,生抽:20ml,淀粉:10g', method: '鱼块裹淀粉煎至金黄，加姜蒜辣椒炒香，加水焖煮10分钟，收汁调味。', count: 0 },
+            { id: 121, name: '洋葱炒牛肉', cat: 'meat', ingredients: '牛肉:250g,洋葱:1个,黑胡椒:5g,生抽:15ml,蚝油:10g', method: '牛肉逆纹切片腌制，滑炒至变色盛出。炒软洋葱，倒回牛肉，加黑胡椒和蚝油翻炒。', count: 0 },
+            { id: 122, name: '韭菜炒鸡蛋', cat: 'meat', ingredients: '韭菜:200g,鸡蛋:3个,盐:3g,油:15ml', method: '鸡蛋炒散盛出。炒香韭菜，倒入鸡蛋翻炒，加盐调味。', count: 0 },
+            { id: 123, name: '虾仁滑蛋', cat: 'meat', ingredients: '虾仁:150g,鸡蛋:3个,盐:2g,淀粉:5g,葱花:5g', method: '虾仁腌制，滑炒至变色。鸡蛋液加淀粉水，小火炒至半凝固，加入虾仁翻炒至熟。', count: 0 },
+            { id: 124, name: '红烧茄子肉末', cat: 'meat', ingredients: '茄子:2个,肉末:100g,郫县豆瓣酱:10g,生抽:10ml', method: '茄子煎软盛出。炒香肉末和豆瓣酱，下茄子翻炒，加水焖煮5分钟收汁。', count: 0 },
+            { id: 125, name: '咖喱鸡块', cat: 'meat', ingredients: '鸡腿肉:400g,土豆:1个,胡萝卜:1根,咖喱块:2块,椰奶:50ml', method: '鸡肉土豆胡萝卜切块，炒香后加水煮软，加入咖喱块和椰奶，煮至汤汁浓稠。', count: 0 },
+            { id: 126, name: '香菇滑鸡', cat: 'meat', ingredients: '鸡腿肉:300g,香菇:10朵,姜蒜:10g,生抽:15ml,蚝油:10g', method: '鸡肉腌制，香菇泡发。炒香姜蒜，下鸡肉和香菇翻炒，加水焖煮10分钟收汁。', count: 0 },
+            { id: 127, name: '酸菜鱼片', cat: 'meat', ingredients: '草鱼片:300g,酸菜:200g,干辣椒:10g,花椒:5g,姜片:10g', method: '鱼片腌制上浆。炒香酸菜姜蒜辣椒，加水煮开，滑入鱼片煮熟，撒花椒泼热油。', count: 0 },
+            { id: 128, name: '酱爆鸡丁', cat: 'meat', ingredients: '鸡胸肉:300g,黄瓜丁:50g,甜面酱:15g,白糖:5g,料酒:10ml', method: '鸡丁滑炒至变色。炒香甜面酱，下鸡丁和黄瓜丁翻炒，加糖调味。', count: 0 },
+            { id: 129, name: '孜然羊肉', cat: 'meat', ingredients: '羊肉片:300g,洋葱:半个,孜然粒:10g,辣椒面:5g,盐:2g', method: '羊肉片炒至变色，加洋葱炒软，撒孜然粒和辣椒面翻炒调味。', count: 0 },
+            { id: 130, name: '冬瓜炒虾仁', cat: 'meat', ingredients: '冬瓜:300g,虾仁:100g,盐:3g,淀粉:5g,葱花:5g', method: '虾仁腌制，冬瓜炒软。加入虾仁翻炒至熟，勾薄芡，撒葱花。', count: 0 },
 
             // ================= 【素菜类】 =================
             { id: 201, name: '手撕包菜', cat: 'veg', ingredients: '包菜:1个,干辣椒:5个,花椒:10粒,蒜片:10g,陈醋:15ml', method: '干锅包菜。大火热油爆香花椒辣椒蒜片，下包菜快速翻炒，沿锅边淋入陈醋和生抽，加盐糖调味。', count: 0 },
@@ -498,22 +518,36 @@
             { id: 204, name: '蒜蓉空心菜', cat: 'veg', ingredients: '空心菜:500g,蒜末:30g,盐:3g,鸡精:2g', method: '大火热油爆香一半蒜末，下空心菜快速翻炒至变色，加盐和剩下的蒜末翻炒出锅。', count: 0 },
             { id: 205, name: '剁椒蒸芋头', cat: 'veg', ingredients: '芋头:500g,剁椒:30g,生抽:10ml,葱花:5g', method: '芋头切块码盘，铺剁椒淋生抽，蒸锅大火蒸15-20分钟。', count: 0 },
             { id: 206, name: '清炒油麦菜', cat: 'veg', ingredients: '油麦菜:500g,蒜末:20g,盐:3g', method: '大火快炒，保持脆嫩。', count: 0 },
+            { id: 207, name: '凉拌黄瓜', cat: 'veg', ingredients: '黄瓜:2根,蒜末:10g,小米辣:5g,醋:20ml,生抽:10ml,香油:5ml', method: '黄瓜拍碎切段，加蒜末、小米辣、醋、生抽、香油拌匀。', count: 0 },
+            { id: 208, name: '红烧茄子', cat: 'veg', ingredients: '茄子:2个,蒜末:10g,生抽:15ml,淀粉:5g,糖:5g', method: '茄子煎软，加蒜末炒香，淋生抽和糖，加水焖煮5分钟，勾薄芡。', count: 0 },
+            { id: 209, name: '清炒西兰花', cat: 'veg', ingredients: '西兰花:1颗,蒜末:10g,盐:3g,淀粉:5g', method: '西兰花焯水，炒香蒜末，下西兰花翻炒，勾薄芡加盐调味。', count: 0 },
+            { id: 210, name: '凉拌海带丝', cat: 'veg', ingredients: '海带丝:200g,蒜末:10g,辣椒面:5g,醋:15ml,生抽:10ml', method: '海带丝焯水过凉，加调料拌匀，泼热油激香。', count: 0 },
 
             // ================= 【汤类】 =================
             { id: 301, name: '皮蛋瘦肉粥', cat: 'soup', ingredients: '大米:100g,里脊肉:100g,皮蛋:2个,姜丝:5g,葱花:10g', method: '米煮开花，下姜丝、皮蛋丁、腌好的肉丝，煮10分钟，加盐胡椒粉。', count: 0 },
             { id: 302, name: '冬瓜排骨汤', cat: 'soup', ingredients: '排骨:400g,冬瓜:300g,姜片:10g,枸杞:10粒,盐:5g', method: '排骨焯水，加水姜片炖煮40分钟，下冬瓜再煮15分钟，加盐枸杞。', count: 0 },
             { id: 303, name: '鱼头豆腐汤', cat: 'soup', ingredients: '鱼头:1个,嫩豆腐:1块,姜片:10g,葱花:10g,白胡椒粉:3g', method: '鱼头煎至两面金黄，冲入**开水**大火煮10分钟至汤白，下豆腐煮5分钟，调味。', count: 0 },
             { id: 304, name: '番茄鸡蛋汤', cat: 'soup', ingredients: '番茄:2个,鸡蛋:2个,葱花:5g,盐:3g,香油:5ml', method: '炒出番茄汁加水煮开，淋蛋液成蛋花，调味淋香油。', count: 0 },
-            { id: 305, name: '莲藕排骨汤', cat: 'soup', ingredients: '排骨:500g,莲藕:400g,姜片:10g,盐:5g', method: '湖北/湖南特色。排骨莲藕一起下锅，小火慢炖1.5-2小时。', count: 0 },
+            { id: 305, name: '莲藕排骨汤', cat: 'soup', ingredients: '排骨:500g,莲藕:400g,姜片:10g,盐:5g', method: '排骨莲藕一起下锅，小火慢炖1.5-2小时。', count: 0 },
+            { id: 306, name: '玉米排骨汤', cat: 'soup', ingredients: '排骨:400g,玉米:1根,胡萝卜:1根,姜片:10g,盐:5g', method: '排骨焯水，加水姜片煮30分钟，加玉米胡萝卜再煮20分钟，加盐调味。', count: 0 },
+            { id: 307, name: '紫菜蛋花汤', cat: 'soup', ingredients: '紫菜:10g,鸡蛋:2个,葱花:5g,盐:3g,香油:3ml', method: '水烧开，下紫菜煮2分钟，淋蛋液成蛋花，加盐和香油。', count: 0 },
+            { id: 308, name: '丝瓜鸡蛋汤', cat: 'soup', ingredients: '丝瓜:1根,鸡蛋:2个,盐:3g,葱花:5g', method: '丝瓜炒软，加水煮开，淋蛋液成蛋花，加盐调味。', count: 0 },
+            { id: 309, name: '菌菇汤', cat: 'soup', ingredients: '金针菇:100g,香菇:5朵,蟹味菇:100g,盐:3g,葱花:5g', method: '菌菇焯水，加水煮开，加盐调味，撒葱花。', count: 0 },
+            { id: 310, name: '萝卜丸子汤', cat: 'soup', ingredients: '白萝卜:1根,丸子:200g,盐:3g,白胡椒粉:2g', method: '萝卜切条煮软，加丸子煮至浮起，加盐和胡椒粉。', count: 0 },
 
             // ================= 【小吃类】 =================
             { id: 401, name: '糖油粑粑', cat: 'snack', ingredients: '糯米粉:200g,红糖:50g,油:20ml', method: '糯米粉揉团搓圆压扁。煎至两面金黄，加红糖和少量水，收汁裹满糖浆。', count: 0 },
-            { id: 402, name: '四川冰粉', cat: 'snack', ingredients: '冰粉粉:10g,红糖浆:50ml,山楂碎:10g,花生碎:10g,葡萄干:10g', method: '冰粉粉开水冲兑冷却凝固，划成小块，淋红糖浆加配料。', count: 0 },
+            { id: 402, name: '冰粉', cat: 'snack', ingredients: '冰粉粉:10g,红糖浆:50ml,山楂碎:10g,花生碎:10g,葡萄干:10g', method: '冰粉粉开水冲兑冷却凝固，划成小块，淋红糖浆加配料。', count: 0 },
             { id: 403, name: '炸酥肉', cat: 'snack', ingredients: '五花肉/里脊肉:300g,红薯淀粉:100g,花椒粉:5g,鸡蛋:1个', method: '肉条加花椒粉盐腌制，裹淀粉糊，六成油温炸至金黄。', count: 0 },
             { id: 404, name: '酸辣粉', cat: 'snack', ingredients: '红薯粉:100g,肉末:50g,芽菜:10g,醋:20ml,辣椒油:10ml', method: '煮粉，碗底放调料（醋、酱油、花椒粉、蒜水、辣椒油），冲入高汤，放入粉和配菜。', count: 0 },
             { id: 405, name: '红糖糍粑', cat: 'snack', ingredients: '糍粑:200g,红糖:30g,黄豆粉:20g', method: '糍粑煎软，淋红糖浆，撒黄豆粉。', count: 0 },
+            { id: 406, name: '炸薯条', cat: 'snack', ingredients: '土豆:2个,盐:2g,油:适量', method: '土豆切条焯水，沥干水分，六成油温炸至金黄，撒盐。', count: 0 },
+            { id: 407, name: '手抓饼', cat: 'snack', ingredients: '手抓饼皮:1张,鸡蛋:1个,生菜:1片,酱料:10g', method: '煎熟手抓饼，打入鸡蛋，加生菜和酱料卷起来。', count: 0 },
+            { id: 408, name: '炸春卷', cat: 'snack', ingredients: '春卷皮:10张,馅料:200g,油:适量', method: '包入馅料，六成油温炸至金黄。', count: 0 },
+            { id: 409, name: '麻团', cat: 'snack', ingredients: '糯米粉:200g,豆沙馅:50g,白芝麻:20g,油:适量', method: '糯米粉揉团包馅，滚白芝麻，六成油温炸至浮起。', count: 0 },
+            { id: 410, name: '凉面', cat: 'snack', ingredients: '面条:200g,黄瓜丝:50g,辣椒油:10ml,醋:15ml,生抽:10ml', method: '面条煮熟过凉，加黄瓜丝和调料拌匀。', count: 0 },
 
-            // ================= 【火锅类 - 全面完善版】 =================
+            // ================= 【火锅类 - 完整版】 =================
             
             // --- 锅底 (按份/按包购买) ---
             { id: 501, name: '牛油麻辣锅底', cat: 'hotpot', ingredients: '火锅底料:1包(500g),姜片:3片,大蒜:3瓣,干辣椒:5个,花椒:1把,葱段:2根', method: '锅中倒油炒香姜蒜辣椒花椒，放入火锅底料炒化，加入高汤或开水煮开。', count: 0 },
@@ -567,8 +601,18 @@
             { id: 601, name: '蛋炒饭', cat: 'staple', ingredients: '米饭:2碗,鸡蛋:2个,葱花:10g,盐:2g,油:15ml', method: '鸡蛋炒散，下米饭大火快炒至颗粒分明。', count: 0 },
             { id: 602, name: '扬州炒饭', cat: 'staple', ingredients: '米饭:2碗,火腿丁:30g,青豆:20g,胡萝卜丁:20g,鸡蛋:2个', method: '先炒散鸡蛋盛出，炒香配料，下米饭和鸡蛋，加盐味精。', count: 0 },
             { id: 603, name: '阳春面', cat: 'staple', ingredients: '细面:100g,猪油:1勺,生抽:1勺,葱花:5g', method: '碗底放猪油、生抽、开水。煮好面条放入碗中。', count: 0 },
-            { id: 604, name: '白米饭', cat: 'staple', ingredients: '大米:1杯,水:适量', method: '电饭煲煮熟。', count: 0 }
+            { id: 604, name: '白米饭', cat: 'staple', ingredients: '大米:1杯,水:适量', method: '电饭煲煮熟。', count: 0 },
+            { id: 605, name: '炒米粉', cat: 'staple', ingredients: '米粉:200g,瘦肉丝:50g,青菜:50g,生抽:10ml,蚝油:5g', method: '米粉泡软，炒香肉丝青菜，下米粉翻炒，加调料调味。', count: 0 },
+            { id: 606, name: '炸酱面', cat: 'staple', ingredients: '面条:200g,肉末:100g,豆瓣酱:20g,黄瓜丝:50g', method: '炒香肉末和豆瓣酱，煮好面条，加炸酱和黄瓜丝。', count: 0 },
+            { id: 607, name: '馄饨', cat: 'staple', ingredients: '馄饨皮:50张,馅料:200g,盐:3g,葱花:5g', method: '包好馄饨，水煮至浮起，加盐和葱花。', count: 0 },
+            { id: 608, name: '饺子', cat: 'staple', ingredients: '饺子皮:50张,馅料:200g,醋:10ml,辣椒油:5ml', method: '水煮饺子至浮起，蘸醋和辣椒油吃。', count: 0 },
+            { id: 609, name: '炒面', cat: 'staple', ingredients: '面条:200g,鸡蛋:1个,青菜:50g,生抽:10ml,盐:2g', method: '面条煮至八分熟，炒香鸡蛋青菜，下面条翻炒调味。', count: 0 },
+            { id: 610, name: '煲仔饭', cat: 'staple', ingredients: '大米:1杯,腊肠:2根,青菜:1颗,生抽:10ml,香油:5ml', method: '大米煮至半熟，加腊肠焖熟，烫青菜铺在上面，淋生抽香油。', count: 0 }
         ];
+
+        // 核心优化：自动检测本地数据，旧数据用新的，新数据保留
+        let localData = JSON.parse(localStorage.getItem('familyDishData'));
+        let dishData = (!localData || localData.length < 10) ? BASE_DISH_DATA : localData;
 
         let currentCategory = 'all';
         let editingId = null;
