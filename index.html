@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>家庭菜谱与买菜清单</title>
+    <title>家庭菜谱与买菜清单 (川湘融合版)</title>
     <style>
         :root {
-            --primary: #ff6700; /* 美团橙，醒目 */
+            --primary: #ff6700; /* 美团橙 */
             --bg: #f4f4f4;
             --white: #fff;
             --text: #333;
@@ -30,7 +30,7 @@
             z-index: 10;
         }
 
-        /* 主容器：左侧分类 + 右侧内容 */
+        /* 主容器 */
         .main-container {
             flex: 1;
             display: flex;
@@ -63,7 +63,7 @@
             margin-bottom: 5px;
         }
 
-        /* 右侧菜品区域 */
+        /* 右侧内容区 */
         .content-area {
             flex: 1;
             display: flex;
@@ -71,7 +71,7 @@
             overflow: hidden;
         }
 
-        /* 顶部搜索/功能栏 */
+        /* 搜索栏 */
         .content-header {
             padding: 10px;
             background-color: var(--white);
@@ -131,7 +131,7 @@
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 4px;
-            cursor: pointer; /* 点击名字看做法 */
+            cursor: pointer;
             color: var(--primary);
         }
         .dish-meta {
@@ -186,7 +186,7 @@
             font-size: 14px;
         }
 
-        /* 底部购物车栏 */
+        /* 底部购物车 */
         .cart-bar {
             height: 60px;
             background-color: var(--white);
@@ -322,7 +322,7 @@
             margin-top: 3px;
         }
 
-        /* 购物车详情弹窗 */
+        /* 购物车详情 */
         .cart-detail-list {
             max-height: 300px;
             overflow-y: auto;
@@ -337,7 +337,7 @@
         .cart-item-name { flex: 1; }
         .cart-item-amount { color: var(--primary); font-weight: bold; }
 
-        /* 制作方法弹窗 */
+        /* 制作方法 */
         .method-content {
             font-size: 14px;
             line-height: 1.6;
@@ -350,11 +350,10 @@
             color: #333;
         }
         .method-steps {
-            white-space: pre-wrap; /* 保留换行 */
+            white-space: pre-wrap;
         }
 
     </style>
-    <!-- 引入图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -371,9 +370,8 @@
         <div class="content-area">
             <div class="content-header">
                 <div class="search-box"><i class="fas fa-search"></i> 搜索菜品...</div>
-                <button class="add-btn" onclick="openAddModal()"><i class="fas fa-plus"></i> 添加菜品</button>
+                <button class="add-btn" onclick="openAddModal()"><i class="fas fa-plus"></i> 添加</button>
             </div>
-
             <div class="dish-list" id="dishList">
                 <!-- 动态生成 -->
             </div>
@@ -387,13 +385,13 @@
             <span class="cart-badge" id="cartTotalCount">0</span>
         </div>
         <div class="cart-text">
-            <div>已选 <span id="cartDishCount">0</span> 道菜</div>
-            <div class="cart-total">食材已汇总，点击查看清单</div>
+            <div>已选 <span id="cartDishCount">0</span> 项</div>
+            <div class="cart-total">点击查看汇总清单</div>
         </div>
         <button class="view-cart-btn" onclick="openCartModal()">查看清单</button>
     </div>
 
-    <!-- 1. 添加/编辑菜品的弹窗 -->
+    <!-- 弹窗区域 -->
     <div class="modal-mask" id="editModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -404,7 +402,7 @@
                 <input type="hidden" id="editDishId">
                 <div class="form-group">
                     <label class="form-label">菜名</label>
-                    <input type="text" class="form-input" id="editName" placeholder="例如：可乐鸡翅">
+                    <input type="text" class="form-input" id="editName" placeholder="例如：麻婆豆腐">
                 </div>
                 <div class="form-group">
                     <label class="form-label">分类</label>
@@ -420,12 +418,12 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">食材原料 (关键)</label>
-                    <input type="text" class="form-input" id="editIngredients" placeholder="格式：鸡翅:500g,可乐:300ml,姜:10g">
-                    <div class="ingredients-edit-hint">提示：请严格按照 名称:数量,名称:数量 的格式填写，否则无法计算</div>
+                    <input type="text" class="form-input" id="editIngredients" placeholder="格式：豆腐:500g,牛肉末:100g,花椒粉:5g">
+                    <div class="ingredients-edit-hint">提示：请严格按照 名称:数量,名称:数量 的格式填写</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">制作方法</label>
-                    <textarea class="form-input" id="editMethod" placeholder="输入详细步骤，每步换行..."></textarea>
+                    <textarea class="form-input" id="editMethod" placeholder="输入详细步骤..."></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -435,7 +433,6 @@
         </div>
     </div>
 
-    <!-- 2. 购物车详情弹窗 -->
     <div class="modal-mask" id="cartModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -443,9 +440,7 @@
                 <span class="close-btn" onclick="closeCartModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="cart-detail-list" id="cartDetailContent">
-                    <!-- 动态生成 -->
-                </div>
+                <div class="cart-detail-list" id="cartDetailContent"></div>
             </div>
             <div class="modal-footer">
                 <button class="modal-btn btn-confirm" onclick="clearCart()">清空清单</button>
@@ -453,7 +448,6 @@
         </div>
     </div>
 
-    <!-- 3. 制作方法弹窗 -->
     <div class="modal-mask" id="methodModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -471,7 +465,7 @@
     </div>
 
     <script>
-        // 1. 数据结构定义
+        // 1. 分类定义
         const CATEGORIES = [
             { id: 'all', name: '全部', icon: 'fa-th-list' },
             { id: 'meat', name: '荤菜', icon: 'fa-drumstick-bite' },
@@ -480,54 +474,113 @@
             { id: 'hotpot', name: '火锅', icon: 'fa-hotpot' },
             { id: 'snack', name: '小吃', icon: 'fa-cookie' },
             { id: 'staple', name: '主食', icon: 'fa-bread-slice' },
-            { id: 'other', name: '调料/其他', icon: 'fa-ellipsis-h' }
+            { id: 'other', name: '其他', icon: 'fa-ellipsis-h' }
         ];
 
-        // 初始化数据 (从本地存储读取，没有则用默认数据)
+        // 2. 海量数据初始化 (川湘菜融合 + 完整火锅清单)
         let dishData = JSON.parse(localStorage.getItem('familyDishData')) || [
-            {
-                id: 1, name: '可乐鸡翅', cat: 'meat', 
-                ingredients: '鸡翅:500g,可乐:300ml,姜:10g,酱油:1勺',
-                method: '1. 鸡翅洗净，背面划两刀方便入味。\n2. 冷水下锅，加姜片料酒焯水，捞出沥干。\n3. 锅中倒油，煎至鸡翅两面金黄。\n4. 倒入可乐没过鸡翅，加生抽、老抽。\n5. 中小火焖煮15分钟，大火收汁即可。',
-                count: 0
-            },
-            {
-                id: 2, name: '番茄炒蛋', cat: 'veg', 
-                ingredients: '番茄:2个,鸡蛋:3个,糖:10g',
-                method: '1. 番茄切块，鸡蛋打散。\n2. 热油炒鸡蛋，成型后盛出。\n3. 炒番茄出汁，加糖。\n4. 倒入鸡蛋翻炒均匀加盐出锅。',
-                count: 0
-            },
-            {
-                id: 3, name: '紫菜蛋花汤', cat: 'soup', 
-                ingredients: '紫菜:5g,鸡蛋:1个,香油:5ml',
-                method: '1. 水开下紫菜。\n2. 淋入蛋液。\n3. 加盐和香油。',
-                count: 0
-            },
-            {
-                id: 4, name: '肥牛卷', cat: 'hotpot', 
-                ingredients: '肥牛卷:300g',
-                method: '直接下锅煮变色即可食用。',
-                count: 0
-            },
-            {
-                id: 5, name: '拍黄瓜', cat: 'snack', 
-                ingredients: '黄瓜:1根,蒜:3瓣,醋:2勺',
-                method: '1. 黄瓜拍碎切段。\n2. 加入蒜末、醋、生抽、盐、糖拌匀。',
-                count: 0
-            }
+            // ================= 【荤菜类】(川湘融合) =================
+            { id: 101, name: '小炒黄牛肉', cat: 'meat', ingredients: '黄牛肉:300g,杭椒:100g,小米辣:30g,姜蒜:20g,生抽:20ml,蚝油:10g', method: '湘菜经典。牛肉逆纹切薄片，腌制上浆。大火快炒牛肉变色即出锅，再炒香辣椒姜蒜，倒回牛肉翻炒调味。', count: 0 },
+            { id: 102, name: '回锅肉', cat: 'meat', ingredients: '五花肉:400g,青蒜苗:2根,郫县豆瓣酱:20g,甜面酱:10g,豆豉:10g', method: '川菜经典。五花肉冷水下锅煮至断生，切薄片。热锅少油煸炒肉片至灯盏窝状，下豆瓣酱、豆豉炒出红油，加蒜苗段翻炒。', count: 0 },
+            { id: 103, name: '剁椒鱼头', cat: 'meat', ingredients: '胖头鱼头:1个,剁椒:80g,姜葱蒜:30g,蒸鱼豉油:30ml,料酒:15ml', method: '鱼头腌制铺剁椒，大火蒸12分钟，泼热油激香。', count: 0 },
+            { id: 104, name: '麻婆豆腐', cat: 'meat', ingredients: '嫩豆腐:1块,牛肉末:100g,郫县豆瓣酱:20g,花椒粉:5g,淀粉:10g', method: '川菜。炒香肉末和豆瓣酱，加水煮开，下豆腐煮3分钟，勾芡收汁，撒花椒粉。', count: 0 },
+            { id: 105, name: '辣子鸡', cat: 'meat', ingredients: '鸡腿肉:500g,干辣椒:100g,花椒:30g,花生米:50g,姜蒜:20g', method: '鸡肉切块腌制，炸至金黄酥脆。锅底留油炒香姜蒜花椒干辣椒，倒入鸡块翻炒调味。', count: 0 },
+            { id: 106, name: '毛氏红烧肉', cat: 'meat', ingredients: '五花肉:500g,冰糖:40g,八角桂皮:10g,酱油:20ml,料酒:50ml', method: '五花肉切块焯水，煸炒出油。炒糖色，下肉上色，加调料炖煮40分钟，大火收汁。', count: 0 },
+            { id: 107, name: '宫保鸡丁', cat: 'meat', ingredients: '鸡胸肉:300g,黄瓜丁:50g,胡萝卜丁:50g,花生米:50g,干辣椒:20g', method: '鸡肉切丁腌制滑油。碗汁调好（糖、醋、生抽、淀粉）。炒香姜蒜辣椒，下鸡丁和配菜，淋碗汁翻炒，最后放花生米。', count: 0 },
+            { id: 108, name: '啤酒鸭', cat: 'meat', ingredients: '鸭肉:600g,啤酒:1瓶,干辣椒:20g,姜片:20g,青红椒:100g', method: '鸭肉煸炒至皮紧出油，加姜蒜辣椒炒香，倒入整瓶啤酒焖煮至软烂，收汁加青红椒。', count: 0 },
+            { id: 109, name: '鱼香肉丝', cat: 'meat', ingredients: '猪里脊:250g,木耳丝:50g,胡萝卜丝:50g,笋丝:50g,泡椒:30g', method: '肉丝滑熟。炒香泡椒蒜末，下配菜和肉丝，淋入鱼香汁（糖、醋、生抽、淀粉、水）大火翻炒。', count: 0 },
+            { id: 110, name: '湘西外婆菜', cat: 'meat', ingredients: '外婆菜:200g,鸡蛋:2个,肉末:100g,干辣椒:10g', method: '炒散鸡蛋盛出。炒香肉末和干辣椒，下外婆菜炒干水分，倒入鸡蛋碎翻炒。', count: 0 },
+
+            // ================= 【素菜类】 =================
+            { id: 201, name: '手撕包菜', cat: 'veg', ingredients: '包菜:1个,干辣椒:5个,花椒:10粒,蒜片:10g,陈醋:15ml', method: '干锅包菜。大火热油爆香花椒辣椒蒜片，下包菜快速翻炒，沿锅边淋入陈醋和生抽，加盐糖调味。', count: 0 },
+            { id: 202, name: '干煸四季豆', cat: 'veg', ingredients: '四季豆:400g,肉末:50g,芽菜:20g,干辣椒:10g', method: '四季豆炸至皱皮或煸干水分。锅留底油炒肉末芽菜辣椒，下四季豆翻炒调味。', count: 0 },
+            { id: 203, name: '酸辣土豆丝', cat: 'veg', ingredients: '土豆:2个,干辣椒:5个,花椒:10粒,醋:20ml,蒜片:5g', method: '土豆切丝泡水去淀粉。大火快炒土豆丝断生，加干辣椒花椒蒜片，沿锅边淋醋，加盐糖。', count: 0 },
+            { id: 204, name: '蒜蓉空心菜', cat: 'veg', ingredients: '空心菜:500g,蒜末:30g,盐:3g,鸡精:2g', method: '大火热油爆香一半蒜末，下空心菜快速翻炒至变色，加盐和剩下的蒜末翻炒出锅。', count: 0 },
+            { id: 205, name: '剁椒蒸芋头', cat: 'veg', ingredients: '芋头:500g,剁椒:30g,生抽:10ml,葱花:5g', method: '芋头切块码盘，铺剁椒淋生抽，蒸锅大火蒸15-20分钟。', count: 0 },
+            { id: 206, name: '清炒油麦菜', cat: 'veg', ingredients: '油麦菜:500g,蒜末:20g,盐:3g', method: '大火快炒，保持脆嫩。', count: 0 },
+
+            // ================= 【汤类】 =================
+            { id: 301, name: '皮蛋瘦肉粥', cat: 'soup', ingredients: '大米:100g,里脊肉:100g,皮蛋:2个,姜丝:5g,葱花:10g', method: '米煮开花，下姜丝、皮蛋丁、腌好的肉丝，煮10分钟，加盐胡椒粉。', count: 0 },
+            { id: 302, name: '冬瓜排骨汤', cat: 'soup', ingredients: '排骨:400g,冬瓜:300g,姜片:10g,枸杞:10粒,盐:5g', method: '排骨焯水，加水姜片炖煮40分钟，下冬瓜再煮15分钟，加盐枸杞。', count: 0 },
+            { id: 303, name: '鱼头豆腐汤', cat: 'soup', ingredients: '鱼头:1个,嫩豆腐:1块,姜片:10g,葱花:10g,白胡椒粉:3g', method: '鱼头煎至两面金黄，冲入**开水**大火煮10分钟至汤白，下豆腐煮5分钟，调味。', count: 0 },
+            { id: 304, name: '番茄鸡蛋汤', cat: 'soup', ingredients: '番茄:2个,鸡蛋:2个,葱花:5g,盐:3g,香油:5ml', method: '炒出番茄汁加水煮开，淋蛋液成蛋花，调味淋香油。', count: 0 },
+            { id: 305, name: '莲藕排骨汤', cat: 'soup', ingredients: '排骨:500g,莲藕:400g,姜片:10g,盐:5g', method: '湖北/湖南特色。排骨莲藕一起下锅，小火慢炖1.5-2小时。', count: 0 },
+
+            // ================= 【小吃类】 =================
+            { id: 401, name: '糖油粑粑', cat: 'snack', ingredients: '糯米粉:200g,红糖:50g,油:20ml', method: '糯米粉揉团搓圆压扁。煎至两面金黄，加红糖和少量水，收汁裹满糖浆。', count: 0 },
+            { id: 402, name: '四川冰粉', cat: 'snack', ingredients: '冰粉粉:10g,红糖浆:50ml,山楂碎:10g,花生碎:10g,葡萄干:10g', method: '冰粉粉开水冲兑冷却凝固，划成小块，淋红糖浆加配料。', count: 0 },
+            { id: 403, name: '炸酥肉', cat: 'snack', ingredients: '五花肉/里脊肉:300g,红薯淀粉:100g,花椒粉:5g,鸡蛋:1个', method: '肉条加花椒粉盐腌制，裹淀粉糊，六成油温炸至金黄。', count: 0 },
+            { id: 404, name: '酸辣粉', cat: 'snack', ingredients: '红薯粉:100g,肉末:50g,芽菜:10g,醋:20ml,辣椒油:10ml', method: '煮粉，碗底放调料（醋、酱油、花椒粉、蒜水、辣椒油），冲入高汤，放入粉和配菜。', count: 0 },
+            { id: 405, name: '红糖糍粑', cat: 'snack', ingredients: '糍粑:200g,红糖:30g,黄豆粉:20g', method: '糍粑煎软，淋红糖浆，撒黄豆粉。', count: 0 },
+
+            // ================= 【火锅类 - 全面完善版】 =================
+            
+            // --- 锅底 (按份/按包购买) ---
+            { id: 501, name: '牛油麻辣锅底', cat: 'hotpot', ingredients: '火锅底料:1包(500g),姜片:3片,大蒜:3瓣,干辣椒:5个,花椒:1把,葱段:2根', method: '锅中倒油炒香姜蒜辣椒花椒，放入火锅底料炒化，加入高汤或开水煮开。', count: 0 },
+            { id: 502, name: '清油火锅锅底', cat: 'hotpot', ingredients: '清油火锅底料:1包,姜葱蒜:适量', method: '清油底料炒制后加水煮开，清爽不糊口。', count: 0 },
+            { id: 503, name: '番茄浓汤锅底', cat: 'hotpot', ingredients: '番茄火锅底料:1包,新鲜番茄:2个(切丁),番茄酱:2勺', method: '炒软新鲜番茄丁，加番茄酱和底料，加水煮开。', count: 0 },
+            { id: 504, name: '菌汤锅底', cat: 'hotpot', ingredients: '菌汤膏/粉:1包,干香菇:5朵,金针菇:1把', method: '菌菇煮水，加入菌汤底料调味。', count: 0 },
+            { id: 505, name: '三鲜/骨汤锅底', cat: 'hotpot', ingredients: '猪骨高汤:1L,红枣:3颗,枸杞:1把,姜片:2片,大葱段:1根', method: '所有材料放入锅中煮开即可。', count: 0 },
+            
+            // --- 必点荤菜 (内脏/特色) ---
+            { id: 511, name: '鲜毛肚', cat: 'hotpot', ingredients: '鲜毛肚:250g', method: '七上八下，烫10-15秒即可，口感脆嫩。', count: 0 },
+            { id: 512, name: '鲜鸭肠', cat: 'hotpot', ingredients: '鲜鸭肠:250g', method: '七上八下，烫10秒左右，卷曲即食。', count: 0 },
+            { id: 513, name: '牛黄喉', cat: 'hotpot', ingredients: '黄喉:200g', method: '烫1-2分钟，口感爽脆。', count: 0 },
+            { id: 514, name: '猪黄喉', cat: 'hotpot', ingredients: '猪黄喉:200g', method: '烫1-2分钟。', count: 0 },
+            { id: 515, name: '千层肚', cat: 'hotpot', ingredients: '千层肚:200g', method: '烫3-5分钟。', count: 0 },
+            { id: 516, name: '生抠鸭肠', cat: 'hotpot', ingredients: '生抠鸭肠:250g', method: '比普通鸭肠更脆，烫几秒即可。', count: 0 },
+            { id: 517, name: '猪脑花', cat: 'hotpot', ingredients: '猪脑花:2副', method: '需煮10-15分钟以上，口感像豆腐。', count: 0 },
+            { id: 518, name: '麻辣牛肉', cat: 'hotpot', ingredients: '牛肉片:200g,辣椒面:50g', method: '裹满辣椒的牛肉，煮3-5分钟，极辣。', count: 0 },
+            { id: 519, name: '嫩牛肉', cat: 'hotpot', ingredients: '牛里脊:200g,蛋清:1个,嫩肉粉:少许', method: '煮2-3分钟，口感嫩滑。', count: 0 },
+            { id: 520, name: '耗儿鱼', cat: 'hotpot', ingredients: '耗儿鱼:300g', method: '煮5-8分钟，肉质细嫩。', count: 0 },
+            { id: 521, name: '现炸酥肉', cat: 'hotpot', ingredients: '炸酥肉:200g', method: '可以直接吃，也可以煮在锅里吸满汤汁。', count: 0 },
+            { id: 522, name: '郡肝 (鸡胗)', cat: 'hotpot', ingredients: '郡肝:200g', method: '煮3-5分钟，脆嫩有嚼劲。', count: 0 },
+            { id: 523, name: '鸡爪', cat: 'hotpot', ingredients: '鸡爪:500g', method: '需煮15分钟以上，耙糯脱骨。', count: 0 },
+            { id: 524, name: '肥肠节子', cat: 'hotpot', ingredients: '肥肠节子:200g', method: '煮10分钟以上，咬开会爆油汁。', count: 0 },
+            { id: 525, name: '午餐肉', cat: 'hotpot', ingredients: '梅林午餐肉:1听', method: '切片煮3-5分钟。', count: 0 },
+            { id: 526, name: '巴沙鱼/龙利鱼', cat: 'hotpot', ingredients: '鱼柳:300g', method: '无刺，烫1-2分钟即熟。', count: 0 },
+            { id: 527, name: '虾滑', cat: 'hotpot', ingredients: '虾滑:150g', method: '挤入锅中煮至浮起。', count: 0 },
+            { id: 528, name: '广味香肠', cat: 'hotpot', ingredients: '广味香肠:200g', method: '切片煮几分钟。', count: 0 },
+            
+            // --- 素菜类 ---
+            { id: 531, name: '土豆片', cat: 'hotpot', ingredients: '土豆:2个', method: '切薄片，烫30秒-1分钟，脆的好吃。', count: 0 },
+            { id: 532, name: '藕片', cat: 'hotpot', ingredients: '莲藕:1节', method: '切薄片，煮2-3分钟。', count: 0 },
+            { id: 533, name: '贡菜', cat: 'hotpot', ingredients: '贡菜:150g', method: '烫30秒，嘎嘣脆。', count: 0 },
+            { id: 534, name: '娃娃菜', cat: 'hotpot', ingredients: '娃娃菜:2颗', method: '煮软即可，吸味。', count: 0 },
+            { id: 535, name: '海带苗/海带结', cat: 'hotpot', ingredients: '海带苗:100g', method: '海带苗烫几秒，海带结煮久点。', count: 0 },
+            { id: 536, name: '冻豆腐', cat: 'hotpot', ingredients: '老豆腐:1块(冷冻)', method: '吸满汤汁，煮5分钟以上。', count: 0 },
+            { id: 537, name: '金针菇', cat: 'hotpot', ingredients: '金针菇:200g', method: '煮3分钟，小心塞牙。', count: 0 },
+            { id: 538, name: '香菇', cat: 'hotpot', ingredients: '香菇:5朵', method: '切花刀，煮5-8分钟。', count: 0 },
+            { id: 539, name: '莴笋尖', cat: 'hotpot', ingredients: '莴笋尖:200g', method: '烫1分钟，清香。', count: 0 },
+            { id: 540, name: '木耳', cat: 'hotpot', ingredients: '黑木耳:100g', method: '泡发，煮2-3分钟。', count: 0 },
+            
+            // --- 豆制品/主食类 ---
+            { id: 551, name: '鲜鸭血', cat: 'hotpot', ingredients: '鲜鸭血:1盒', method: '煮久一点更嫩，麻辣锅绝配。', count: 0 },
+            { id: 552, name: '响铃卷/炸豆皮', cat: 'hotpot', ingredients: '响铃卷:1包', method: '烫3秒即可，久了会烂。', count: 0 },
+            { id: 553, name: '豆腐皮/千张', cat: 'hotpot', ingredients: '千张:200g', method: '切丝或切条，煮2分钟。', count: 0 },
+            { id: 554, name: '油面筋', cat: 'hotpot', ingredients: '油面筋:10个', method: '戳个洞，煮3分钟吸汤。', count: 0 },
+            { id: 555, name: '红薯宽粉', cat: 'hotpot', ingredients: '宽粉:1把', method: '煮软，最后下，主食首选。', count: 0 },
+            { id: 556, name: '方便面/火锅面', cat: 'hotpot', ingredients: '方便面:1包', method: '最后煮，灵魂伴侣。', count: 0 },
+            { id: 557, name: '苕皮', cat: 'hotpot', ingredients: '苕皮:1袋', method: '煮软，口感糯叽叽。', count: 0 },
+            
+            // ================= 【主食类】 =================
+            { id: 601, name: '蛋炒饭', cat: 'staple', ingredients: '米饭:2碗,鸡蛋:2个,葱花:10g,盐:2g,油:15ml', method: '鸡蛋炒散，下米饭大火快炒至颗粒分明。', count: 0 },
+            { id: 602, name: '扬州炒饭', cat: 'staple', ingredients: '米饭:2碗,火腿丁:30g,青豆:20g,胡萝卜丁:20g,鸡蛋:2个', method: '先炒散鸡蛋盛出，炒香配料，下米饭和鸡蛋，加盐味精。', count: 0 },
+            { id: 603, name: '阳春面', cat: 'staple', ingredients: '细面:100g,猪油:1勺,生抽:1勺,葱花:5g', method: '碗底放猪油、生抽、开水。煮好面条放入碗中。', count: 0 },
+            { id: 604, name: '白米饭', cat: 'staple', ingredients: '大米:1杯,水:适量', method: '电饭煲煮熟。', count: 0 }
         ];
 
         let currentCategory = 'all';
-        let editingId = null; // 当前正在编辑的ID
+        let editingId = null;
 
-        // 2. 初始化渲染
+        // 3. 初始化
         function init() {
             renderCategories();
             renderDishes();
             updateCartBar();
         }
 
-        // 3. 渲染左侧分类
+        // 4. 渲染左侧分类
         function renderCategories() {
             const listEl = document.getElementById('categoryList');
             listEl.innerHTML = CATEGORIES.map(c => `
@@ -539,7 +592,7 @@
             `).join('');
         }
 
-        // 4. 渲染右侧菜品列表
+        // 5. 渲染右侧菜品
         function renderDishes() {
             const listEl = document.getElementById('dishList');
             let filtered = dishData;
@@ -573,31 +626,28 @@
             `).join('');
         }
 
-        // 5. 辅助函数：获取分类名称
+        // 6. 辅助函数
         function getCatName(catId) {
             const cat = CATEGORIES.find(c => c.id === catId);
             return cat ? cat.name : '其他';
         }
 
-        // 6. 切换分类
         function changeCategory(catId) {
             currentCategory = catId;
             renderCategories();
             renderDishes();
         }
 
-        // 7. 加减菜品数量
         function changeCount(id, delta) {
             const dish = dishData.find(d => d.id === id);
             if (dish) {
                 dish.count = Math.max(0, (dish.count || 0) + delta);
                 saveToLocalStorage();
-                renderDishes(); // 局部刷新数量更好，但为了简单直接全刷
+                renderDishes();
                 updateCartBar();
             }
         }
 
-        // 8. 更新底部购物车栏状态
         function updateCartBar() {
             const totalCount = dishData.reduce((sum, d) => sum + (d.count || 0), 0);
             const totalDishCount = dishData.filter(d => d.count > 0).length;
@@ -606,20 +656,17 @@
             document.getElementById('cartDishCount').innerText = totalDishCount;
         }
 
-        // 9. 计算并打开购物车清单
+        // 7. 购物车逻辑
         function openCartModal() {
             const cartMap = {};
             
-            // 汇总所有食材
             dishData.forEach(d => {
                 if (!d.count || d.count === 0) return;
-                // 解析 ingredients 字符串 "a:1,b:2"
                 const parts = d.ingredients.split(',');
                 parts.forEach(p => {
                     const [name, amountStr] = p.split(':');
                     if (!name || !amountStr) return;
                     
-                    // 简单提取数字和单位 (假设格式是 "500g" 或 "2个")
                     const amountMatch = amountStr.match(/([\d.]+)(.*)/);
                     if (!amountMatch) return;
                     
@@ -665,7 +712,7 @@
             closeCartModal();
         }
 
-        // 10. 制作方法弹窗
+        // 8. 制作方法弹窗
         function openMethodModal(id) {
             const dish = dishData.find(d => d.id === id);
             if (dish) {
@@ -679,12 +726,13 @@
             document.getElementById('methodModal').style.display = 'none';
         }
 
-        // 11. 添加/编辑弹窗逻辑
+        // 9. 编辑弹窗
         function openAddModal() {
             editingId = null;
             document.getElementById('editModalTitle').innerText = '添加新菜品';
             document.getElementById('editDishId').value = '';
             document.getElementById('editName').value = '';
+            document.getElementById('editCategory').value = 'meat';
             document.getElementById('editIngredients').value = '';
             document.getElementById('editMethod').value = '';
             document.getElementById('editModal').style.display = 'flex';
@@ -720,14 +768,12 @@
             }
 
             if (editingId !== null) {
-                // 编辑模式
                 const index = dishData.findIndex(d => d.id === editingId);
                 if (index !== -1) {
                     dishData[index] = { ...dishData[index], name, cat, ingredients, method };
                 }
             } else {
-                // 添加模式
-                const newId = Date.now(); // 用时间戳做ID
+                const newId = Date.now();
                 dishData.push({
                     id: newId,
                     name,
@@ -743,12 +789,10 @@
             closeEditModal();
         }
 
-        // 12. 本地存储
         function saveToLocalStorage() {
             localStorage.setItem('familyDishData', JSON.stringify(dishData));
         }
 
-        // 启动
         init();
 
     </script>
