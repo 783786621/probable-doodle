@@ -3,281 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>家庭点菜 - 买菜清单自动计算</title>
+    <title>家庭菜谱与买菜清单</title>
     <style>
-        /* 全局样式重置 */
+        :root {
+            --primary: #ff6700; /* 美团橙，醒目 */
+            --bg: #f4f4f4;
+            --white: #fff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background-color: #f4f4f4; color: #333; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* 顶部导航 */
+        body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif; background-color: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* 顶部标题 */
         .header {
-            background-color: #ff6700;
-            color: #fff;
+            background-color: var(--white);
             padding: 12px 15px;
-            text-align: center;
             font-size: 18px;
             font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             position: relative;
             z-index: 10;
         }
 
-        /* 主内容区 - 占据中间所有空间 */
+        /* 主容器：左侧分类 + 右侧内容 */
         .main-container {
             flex: 1;
             display: flex;
             overflow: hidden;
-            position: relative;
         }
 
-        /* 左侧菜品列表 (可滚动) */
-        .menu-section {
-            width: 100%;
+        /* 左侧分类栏 */
+        .category-list {
+            width: 85px;
+            background-color: #f8f8f8;
             overflow-y: auto;
-            padding-bottom: 80px; /* 给底部购物车留出空间 */
-            background-color: #f4f4f4;
+            border-right: 1px solid var(--border);
+        }
+        .category-item {
+            padding: 15px 0;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        .category-item.active {
+            background-color: var(--white);
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+            font-weight: bold;
+        }
+        .category-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
         }
 
-        /* 分类标签栏 */
-        .category-tabs {
+        /* 右侧菜品区域 */
+        .content-area {
+            flex: 1;
             display: flex;
-            background-color: #fff;
-            padding: 10px 15px;
-            overflow-x: auto;
-            white-space: nowrap;
-            border-bottom: 1px solid #eee;
-            position: sticky;
-            top: 0;
-            z-index: 5;
+            flex-direction: column;
+            overflow: hidden;
         }
-        .category-tab {
-            display: inline-block;
-            padding: 6px 12px;
-            margin-right: 10px;
-            background-color: #f9f9f9;
-            color: #666;
+
+        /* 顶部搜索/功能栏 */
+        .content-header {
+            padding: 10px;
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-box {
+            flex: 1;
+            background-color: #f2f2f2;
             border-radius: 15px;
-            font-size: 14px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: #999;
+            margin-right: 10px;
+        }
+        .add-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
             cursor: pointer;
         }
-        .category-tab.active {
-            background-color: #ff6700;
-            color: #fff;
+
+        /* 菜品列表 */
+        .dish-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .empty-tip {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 50px;
         }
 
         /* 菜品卡片 */
-        .dish-list {
-            padding: 10px;
-        }
-        .dish-item {
-            background-color: #fff;
+        .dish-card {
+            background-color: var(--white);
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             display: flex;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .dish-img-box {
-            width: 80px;
-            height: 80px;
-            border-radius: 6px;
-            overflow: hidden;
-            flex-shrink: 0;
-            background-color: #eee;
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            color: #999;
-        }
-        .dish-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
         .dish-info {
             flex: 1;
-            margin-left: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .dish-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
         }
         .dish-name {
             font-size: 16px;
             font-weight: bold;
-            max-width: 70%;
+            margin-bottom: 4px;
+            cursor: pointer; /* 点击名字看做法 */
+            color: var(--primary);
+        }
+        .dish-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+        }
+        .dish-tag {
+            background-color: #fff0e6;
+            color: #ff6700;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 10px;
+            margin-right: 5px;
+        }
+        .dish-ingredients {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 200px;
         }
-        .dish-price {
-            color: #ff6700;
-            font-weight: bold;
+        .dish-ctrl {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .dish-desc {
-            font-size: 12px;
+        .edit-btn {
             color: #999;
-            margin-top: 4px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.4;
-        }
-        .dish-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-        }
-        .method-tag {
-            font-size: 11px;
-            color: #ff6700;
-            border: 1px solid #ff6700;
-            padding: 2px 5px;
-            border-radius: 3px;
             cursor: pointer;
+            font-size: 14px;
         }
-        .count-control {
+        .count-box {
             display: flex;
             align-items: center;
         }
-        .ctrl-btn {
+        .count-btn {
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background-color: #f0f0f0;
+            background-color: #f2f2f2;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 16px;
             cursor: pointer;
-            user-select: none;
+            color: #666;
         }
-        .minus-btn { color: #999; }
-        .plus-btn { background-color: #ff6700; color: #fff; }
         .count-num {
-            margin: 0 10px;
-            font-size: 14px;
             width: 20px;
             text-align: center;
+            font-size: 14px;
         }
 
-        /* 右侧/底部 购物清单抽屉 (默认隐藏，手机端从右侧滑出或点击底部显示) */
-        .cart-drawer {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #fff;
-            z-index: 90;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        .cart-drawer.active {
-            transform: translateX(0);
-        }
-        .cart-header {
-            padding: 15px;
-            background-color: #fff;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .close-cart {
-            width: 24px;
-            height: 24px;
-            background: #f0f0f0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .cart-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-        }
-        .ingredient-group {
-            margin-bottom: 20px;
-        }
-        .group-title {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        .group-title::before {
-            content: '';
-            width: 4px;
-            height: 12px;
-            background-color: #ff6700;
-            margin-right: 6px;
-        }
-        .ingredient-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed #eee;
-            font-size: 14px;
-        }
-        .ing-name { flex: 1; }
-        .ing-amount { color: #ff6700; font-weight: bold; }
-        
-        /* 底部固定操作栏 (仅移动端显示) */
-        .footer-ctrl {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
+        /* 底部购物车栏 */
+        .cart-bar {
             height: 60px;
-            background-color: #fff;
+            background-color: var(--white);
+            border-top: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 15px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 80;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+            z-index: 10;
         }
-        .cart-preview {
-            font-size: 12px;
+        .cart-icon {
+            font-size: 24px;
+            color: var(--primary);
+            position: relative;
+        }
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: red;
+            color: white;
+            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 10px;
+        }
+        .cart-text {
+            flex: 1;
+            margin-left: 10px;
+            font-size: 13px;
             color: #666;
         }
-        .cart-total-count {
-            color: #ff6700;
+        .cart-total {
+            font-size: 15px;
             font-weight: bold;
-            font-size: 16px;
+            color: var(--text);
         }
         .view-cart-btn {
-            background-color: #ff6700;
-            color: #fff;
+            background-color: #fff0e6;
+            color: var(--primary);
             border: none;
-            padding: 10px 25px;
-            border-radius: 20px;
-            font-size: 16px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
             cursor: pointer;
         }
 
-        /* 制作方法弹窗 */
-        .modal-overlay {
+        /* --- 弹窗通用样式 --- */
+        .modal-mask {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.5);
             z-index: 100;
             display: none;
             justify-content: center;
@@ -285,398 +249,508 @@
             padding: 20px;
         }
         .modal-content {
-            background: #fff;
+            background: white;
             width: 100%;
             max-width: 400px;
             border-radius: 10px;
             overflow: hidden;
-            max-height: 80vh;
+            max-height: 90vh;
             display: flex;
             flex-direction: column;
         }
-        .modal-img-placeholder {
-            width: 100%;
-            height: 200px;
-            background-color: #eee;
+        .modal-header {
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+        }
+        .close-btn {
+            font-size: 20px;
+            cursor: pointer;
             color: #999;
         }
-        .modal-img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            display: none;
-        }
         .modal-body {
-            padding: 20px;
+            padding: 15px;
             flex: 1;
             overflow-y: auto;
         }
-        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
-        .modal-steps { font-size: 14px; line-height: 1.6; color: #444; white-space: pre-wrap; }
-        .close-modal {
-            width: 100%;
-            padding: 12px;
-            background: #f8f8f8;
-            border: none;
-            font-size: 16px;
-            color: #333;
-            cursor: pointer;
+        .modal-footer {
+            padding: 10px 15px;
             border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
+        .modal-btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-cancel { background: #f2f2f2; color: #666; }
+        .btn-confirm { background: var(--primary); color: white; }
 
-        /* 空状态 */
-        .empty-tip {
-            text-align: center;
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .ingredients-edit-hint {
+            font-size: 11px;
             color: #999;
-            margin-top: 50px;
+            margin-top: 3px;
         }
 
-        /* 适配横屏或平板 */
-        @media (min-width: 768px) {
-            .menu-section { width: 60%; }
-            .cart-drawer { width: 40%; transform: translateX(0); box-shadow: -2px 0 10px rgba(0,0,0,0.1); }
-            .footer-ctrl { display: none; } /* 大屏直接显示，不需要底部按钮 */
+        /* 购物车详情弹窗 */
+        .cart-detail-list {
+            max-height: 300px;
+            overflow-y: auto;
         }
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 14px;
+        }
+        .cart-item-name { flex: 1; }
+        .cart-item-amount { color: var(--primary); font-weight: bold; }
+
+        /* 制作方法弹窗 */
+        .method-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .method-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .method-steps {
+            white-space: pre-wrap; /* 保留换行 */
+        }
+
     </style>
+    <!-- 引入图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <div class="header">家庭点菜 (自动计算买菜量)</div>
+    <div class="header">家庭菜谱 & 买菜清单</div>
 
     <div class="main-container">
-        <!-- 左侧菜品区域 -->
-        <div class="menu-section">
-            <div class="category-tabs">
-                <div class="category-tab active" data-cat="all">全部</div>
-                <div class="category-tab" data-cat="meat">荤菜</div>
-                <div class="category-tab" data-cat="veg">素菜</div>
-                <div class="category-tab" data-cat="soup">汤类</div>
-                <div class="category-tab" data-cat="other">其他</div>
-            </div>
-            
-            <div class="dish-list" id="dishList">
-                <!-- 菜品动态生成 -->
-            </div>
+        <!-- 左侧分类 -->
+        <div class="category-list" id="categoryList">
+            <!-- 动态生成 -->
         </div>
 
-        <!-- 右侧购物清单抽屉 -->
-        <div class="cart-drawer" id="cartDrawer">
-            <div class="cart-header">
-                <span>🛒 本次买菜清单（按克）</span>
-                <div class="close-cart" onclick="toggleCart()">✕</div>
+        <!-- 右侧内容 -->
+        <div class="content-area">
+            <div class="content-header">
+                <div class="search-box"><i class="fas fa-search"></i> 搜索菜品...</div>
+                <button class="add-btn" onclick="openAddModal()"><i class="fas fa-plus"></i> 添加菜品</button>
             </div>
-            <div class="cart-body" id="cartItemsList">
-                <!-- 食材动态生成 -->
-                <div class="empty-tip">
-                    您的购物车是空的<br>快去选几个想吃的菜吧
+
+            <div class="dish-list" id="dishList">
+                <!-- 动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部购物车 -->
+    <div class="cart-bar">
+        <div class="cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-badge" id="cartTotalCount">0</span>
+        </div>
+        <div class="cart-text">
+            <div>已选 <span id="cartDishCount">0</span> 道菜</div>
+            <div class="cart-total">食材已汇总，点击查看清单</div>
+        </div>
+        <button class="view-cart-btn" onclick="openCartModal()">查看清单</button>
+    </div>
+
+    <!-- 1. 添加/编辑菜品的弹窗 -->
+    <div class="modal-mask" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="editModalTitle">添加新菜品</span>
+                <span class="close-btn" onclick="closeEditModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editDishId">
+                <div class="form-group">
+                    <label class="form-label">菜名</label>
+                    <input type="text" class="form-input" id="editName" placeholder="例如：可乐鸡翅">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分类</label>
+                    <select class="form-input" id="editCategory">
+                        <option value="meat">荤菜</option>
+                        <option value="veg">素菜</option>
+                        <option value="soup">汤类</option>
+                        <option value="snack">小吃</option>
+                        <option value="hotpot">火锅</option>
+                        <option value="staple">主食</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">食材原料 (关键)</label>
+                    <input type="text" class="form-input" id="editIngredients" placeholder="格式：鸡翅:500g,可乐:300ml,姜:10g">
+                    <div class="ingredients-edit-hint">提示：请严格按照 名称:数量,名称:数量 的格式填写，否则无法计算</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">制作方法</label>
+                    <textarea class="form-input" id="editMethod" placeholder="输入详细步骤，每步换行..."></textarea>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- 底部操作栏 (仅移动端显示) -->
-    <div class="footer-ctrl">
-        <div class="cart-preview">
-            已选 <span class="cart-total-count" id="totalCount">0</span> 份菜品
-        </div>
-        <button class="view-cart-btn" onclick="toggleCart()">查看买菜清单</button>
-    </div>
-
-    <!-- 制作方法弹窗 -->
-    <div class="modal-overlay" id="methodModal">
-        <div class="modal-content">
-            <div class="modal-img-placeholder" id="modalImgPlaceholder">菜品图片</div>
-            <img id="modalImgSrc" class="modal-img" src="" alt="">
-            <div class="modal-body">
-                <div class="modal-title" id="modalDishName"></div>
-                <div class="modal-steps" id="modalSteps"></div>
+            <div class="modal-footer">
+                <button class="modal-btn btn-cancel" onclick="closeEditModal()">取消</button>
+                <button class="modal-btn btn-confirm" onclick="saveDish()">保存</button>
             </div>
-            <button class="close-modal" onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 2. 购物车详情弹窗 -->
+    <div class="modal-mask" id="cartModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>🛒 本次买菜清单</span>
+                <span class="close-btn" onclick="closeCartModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="cart-detail-list" id="cartDetailContent">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn btn-confirm" onclick="clearCart()">清空清单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 制作方法弹窗 -->
+    <div class="modal-mask" id="methodModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>👨‍🍳 制作方法</span>
+                <span class="close-btn" onclick="closeMethodModal()">&times;</span>
+            </div>
+            <div class="modal-body method-content">
+                <h3 class="method-title" id="methodDishName"></h3>
+                <div class="method-steps" id="methodSteps"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn btn-confirm" onclick="closeMethodModal()">我知道了</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // 1. 核心数据结构
-        let dishes = JSON.parse(localStorage.getItem('familyDishes')) || [
+        // 1. 数据结构定义
+        const CATEGORIES = [
+            { id: 'all', name: '全部', icon: 'fa-th-list' },
+            { id: 'meat', name: '荤菜', icon: 'fa-drumstick-bite' },
+            { id: 'veg', name: '素菜', icon: 'fa-leaf' },
+            { id: 'soup', name: '汤类', icon: 'fa-fire-alt' },
+            { id: 'hotpot', name: '火锅', icon: 'fa-hotpot' },
+            { id: 'snack', name: '小吃', icon: 'fa-cookie' },
+            { id: 'staple', name: '主食', icon: 'fa-bread-slice' },
+            { id: 'other', name: '调料/其他', icon: 'fa-ellipsis-h' }
+        ];
+
+        // 初始化数据 (从本地存储读取，没有则用默认数据)
+        let dishData = JSON.parse(localStorage.getItem('familyDishData')) || [
             {
-                id: 1, 
-                name: "可乐鸡翅", 
-                price: 38, 
-                cat: "meat", 
-                ingredients: [
-                    {name: "鸡翅", amount: 500},
-                    {name: "姜", amount: 10},
-                    {name: "可乐", amount: 200},
-                    {name: "蒜", amount: 5}
-                ],
-                method: "1.鸡翅焯水：冷水下锅加料酒、姜片，煮开后撇浮沫捞出；\n2.炒香配料：热油爆香姜蒜；\n3.焖煮：加入鸡翅翻炒至微黄，加可乐没过鸡翅，大火煮开转小火焖15分钟；\n4.收汁：大火收汁至浓稠，撒白芝麻出锅。",
-                img: "", // 空图片，可上传
+                id: 1, name: '可乐鸡翅', cat: 'meat', 
+                ingredients: '鸡翅:500g,可乐:300ml,姜:10g,酱油:1勺',
+                method: '1. 鸡翅洗净，背面划两刀方便入味。\n2. 冷水下锅，加姜片料酒焯水，捞出沥干。\n3. 锅中倒油，煎至鸡翅两面金黄。\n4. 倒入可乐没过鸡翅，加生抽、老抽。\n5. 中小火焖煮15分钟，大火收汁即可。',
                 count: 0
             },
             {
-                id: 2, 
-                name: "番茄炒蛋", 
-                price: 12, 
-                cat: "veg", 
-                ingredients: [
-                    {name: "番茄", amount: 300},
-                    {name: "鸡蛋", amount: 200},
-                    {name: "盐", amount: 3},
-                    {name: "糖", amount: 5}
-                ],
-                method: "1.番茄切块，鸡蛋打散加少许盐；\n2.热油炒鸡蛋，成型后盛出；\n3.热油炒番茄，加少许水煮软；\n4.倒入鸡蛋翻炒，加盐、糖调味即可。",
-                img: "",
+                id: 2, name: '番茄炒蛋', cat: 'veg', 
+                ingredients: '番茄:2个,鸡蛋:3个,糖:10g',
+                method: '1. 番茄切块，鸡蛋打散。\n2. 热油炒鸡蛋，成型后盛出。\n3. 炒番茄出汁，加糖。\n4. 倒入鸡蛋翻炒均匀加盐出锅。',
                 count: 0
             },
             {
-                id: 3, 
-                name: "紫菜蛋花汤", 
-                price: 8, 
-                cat: "soup", 
-                ingredients: [
-                    {name: "紫菜", amount: 10},
-                    {name: "鸡蛋", amount: 100},
-                    {name: "盐", amount: 2},
-                    {name: "香油", amount: 5}
-                ],
-                method: "1.水烧开，放入紫菜煮2分钟；\n2.鸡蛋打散，缓缓倒入锅中形成蛋花；\n3.加盐调味，滴几滴香油即可。",
-                img: "",
+                id: 3, name: '紫菜蛋花汤', cat: 'soup', 
+                ingredients: '紫菜:5g,鸡蛋:1个,香油:5ml',
+                method: '1. 水开下紫菜。\n2. 淋入蛋液。\n3. 加盐和香油。',
+                count: 0
+            },
+            {
+                id: 4, name: '肥牛卷', cat: 'hotpot', 
+                ingredients: '肥牛卷:300g',
+                method: '直接下锅煮变色即可食用。',
+                count: 0
+            },
+            {
+                id: 5, name: '拍黄瓜', cat: 'snack', 
+                ingredients: '黄瓜:1根,蒜:3瓣,醋:2勺',
+                method: '1. 黄瓜拍碎切段。\n2. 加入蒜末、醋、生抽、盐、糖拌匀。',
                 count: 0
             }
         ];
 
-        // 2. 全局变量
-        let cart = {}; // 购物车 {食材名: 总克数}
-        let totalCount = 0; // 总份数
+        let currentCategory = 'all';
+        let editingId = null; // 当前正在编辑的ID
 
-        // 3. 初始化页面
-        init();
+        // 2. 初始化渲染
         function init() {
-            renderDishes(); // 渲染菜品列表
-            bindCategoryTabs(); // 绑定分类标签事件
+            renderCategories();
+            renderDishes();
+            updateCartBar();
         }
 
-        // 4. 渲染菜品列表
-        function renderDishes(filterCat = "all") {
-            const dishListEl = document.getElementById('dishList');
-            let html = '';
-            
-            dishes.forEach(dish => {
-                if (filterCat !== "all" && dish.cat !== filterCat) return;
-                
-                html += `
-                <div class="dish-item" data-id="${dish.id}">
-                    <div class="dish-img-box">
-                        ${dish.img ? `<img class="dish-img" src="${dish.img}" alt="${dish.name}">` : '菜品图'}
-                    </div>
+        // 3. 渲染左侧分类
+        function renderCategories() {
+            const listEl = document.getElementById('categoryList');
+            listEl.innerHTML = CATEGORIES.map(c => `
+                <div class="category-item ${currentCategory === c.id ? 'active' : ''}" 
+                     onclick="changeCategory('${c.id}')">
+                    <div class="category-icon"><i class="fas ${c.icon}"></i></div>
+                    <div>${c.name}</div>
+                </div>
+            `).join('');
+        }
+
+        // 4. 渲染右侧菜品列表
+        function renderDishes() {
+            const listEl = document.getElementById('dishList');
+            let filtered = dishData;
+            if (currentCategory !== 'all') {
+                filtered = dishData.filter(d => d.cat === currentCategory);
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<div class="empty-tip">暂无菜品，点击右上角添加</div>';
+                return;
+            }
+
+            listEl.innerHTML = filtered.map(d => `
+                <div class="dish-card">
                     <div class="dish-info">
-                        <div class="dish-header">
-                            <div class="dish-name">${dish.name}</div>
-                            <div class="dish-price">¥${dish.price}</div>
+                        <div class="dish-name" onclick="openMethodModal(${d.id})">${d.name}</div>
+                        <div class="dish-meta">
+                            <span class="dish-tag">${getCatName(d.cat)}</span>
+                            <span class="dish-ingredients">${d.ingredients.split(',').map(i => i.split(':')[0]).join('、')}</span>
                         </div>
-                        <div class="dish-desc">
-                            ${dish.ingredients.map(item => item.name).join('、')}
-                        </div>
-                        <div class="dish-actions">
-                            <div class="method-tag" onclick="openMethodModal(${dish.id})">制作方法</div>
-                            <div class="count-control">
-                                <div class="ctrl-btn minus-btn" onclick="changeCount(${dish.id}, -1)">-</div>
-                                <div class="count-num">${dish.count}</div>
-                                <div class="ctrl-btn plus-btn" onclick="changeCount(${dish.id}, 1)">+</div>
-                            </div>
+                    </div>
+                    <div class="dish-ctrl">
+                        <span class="edit-btn" onclick="openEditModal(${d.id})"><i class="fas fa-edit"></i></span>
+                        <div class="count-box">
+                            <div class="count-btn" onclick="changeCount(${d.id}, -1)">-</div>
+                            <div class="count-num">${d.count || 0}</div>
+                            <div class="count-btn" onclick="changeCount(${d.id}, 1)">+</div>
                         </div>
                     </div>
                 </div>
-                `;
-            });
-            
-            dishListEl.innerHTML = html;
+            `).join('');
         }
 
-        // 5. 绑定分类标签事件
-        function bindCategoryTabs() {
-            const tabs = document.querySelectorAll('.category-tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // 切换激活状态
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    // 筛选菜品
-                    renderDishes(this.dataset.cat);
-                });
-            });
+        // 5. 辅助函数：获取分类名称
+        function getCatName(catId) {
+            const cat = CATEGORIES.find(c => c.id === catId);
+            return cat ? cat.name : '其他';
         }
 
-        // 6. 改变菜品份数
-        function changeCount(dishId, change) {
-            const dish = dishes.find(d => d.id === dishId);
-            if (!dish) return;
-            
-            // 更新份数（不能小于0）
-            dish.count = Math.max(0, dish.count + change);
-            
-            // 更新购物车
-            updateCart();
-            
-            // 重新渲染
-            renderDishes(document.querySelector('.category-tab.active').dataset.cat);
-            updateCartUI();
+        // 6. 切换分类
+        function changeCategory(catId) {
+            currentCategory = catId;
+            renderCategories();
+            renderDishes();
         }
 
-        // 7. 更新购物车（计算食材总量）
-        function updateCart() {
-            cart = {};
-            totalCount = 0;
-            
-            dishes.forEach(dish => {
-                if (dish.count <= 0) return;
-                
-                // 累加份数
-                totalCount += dish.count;
-                
-                // 累加食材
-                dish.ingredients.forEach(ing => {
-                    if (!cart[ing.name]) {
-                        cart[ing.name] = 0;
-                    }
-                    cart[ing.name] += ing.amount * dish.count;
-                });
-            });
-            
-            // 更新本地存储
-            localStorage.setItem('familyDishes', JSON.stringify(dishes));
-            // 更新底部计数
-            document.getElementById('totalCount').textContent = totalCount;
+        // 7. 加减菜品数量
+        function changeCount(id, delta) {
+            const dish = dishData.find(d => d.id === id);
+            if (dish) {
+                dish.count = Math.max(0, (dish.count || 0) + delta);
+                saveToLocalStorage();
+                renderDishes(); // 局部刷新数量更好，但为了简单直接全刷
+                updateCartBar();
+            }
         }
 
-        // 8. 更新购物车UI
-        function updateCartUI() {
-            const cartListEl = document.getElementById('cartItemsList');
-            let html = '';
+        // 8. 更新底部购物车栏状态
+        function updateCartBar() {
+            const totalCount = dishData.reduce((sum, d) => sum + (d.count || 0), 0);
+            const totalDishCount = dishData.filter(d => d.count > 0).length;
             
-            if (Object.keys(cart).length === 0) {
-                html = `<div class="empty-tip">您的购物车是空的<br>快去选几个想吃的菜吧</div>`;
-            } else {
-                // 按食材类型分组（简单分组）
-                const meatIng = []; // 荤菜食材
-                const vegIng = [];  // 素菜食材
-                const otherIng = [];// 其他食材
-                
-                for (const [name, amount] of Object.entries(cart)) {
-                    const ingItem = `<div class="ingredient-item">
-                        <div class="ing-name">${name}</div>
-                        <div class="ing-amount">${amount} 克</div>
-                    </div>`;
+            document.getElementById('cartTotalCount').innerText = totalCount;
+            document.getElementById('cartDishCount').innerText = totalDishCount;
+        }
+
+        // 9. 计算并打开购物车清单
+        function openCartModal() {
+            const cartMap = {};
+            
+            // 汇总所有食材
+            dishData.forEach(d => {
+                if (!d.count || d.count === 0) return;
+                // 解析 ingredients 字符串 "a:1,b:2"
+                const parts = d.ingredients.split(',');
+                parts.forEach(p => {
+                    const [name, amountStr] = p.split(':');
+                    if (!name || !amountStr) return;
                     
-                    if (['鸡翅', '鸡蛋', '猪肉', '牛肉', '鱼肉'].includes(name)) {
-                        meatIng.push(ingItem);
-                    } else if (['番茄', '紫菜', '姜', '蒜', '青菜', '土豆'].includes(name)) {
-                        vegIng.push(ingItem);
+                    // 简单提取数字和单位 (假设格式是 "500g" 或 "2个")
+                    const amountMatch = amountStr.match(/([\d.]+)(.*)/);
+                    if (!amountMatch) return;
+                    
+                    const num = parseFloat(amountMatch[1]);
+                    const unit = amountMatch[2];
+                    const totalNum = num * d.count;
+
+                    if (cartMap[name]) {
+                        cartMap[name].num += totalNum;
                     } else {
-                        otherIng.push(ingItem);
+                        cartMap[name] = { num: totalNum, unit: unit };
                     }
-                }
-                
-                // 拼接分组HTML
-                if (meatIng.length > 0) {
-                    html += `<div class="ingredient-group">
-                        <div class="group-title">荤菜食材</div>
-                        ${meatIng.join('')}
-                    </div>`;
-                }
-                if (vegIng.length > 0) {
-                    html += `<div class="ingredient-group">
-                        <div class="group-title">素菜食材</div>
-                        ${vegIng.join('')}
-                    </div>`;
-                }
-                if (otherIng.length > 0) {
-                    html += `<div class="ingredient-group">
-                        <div class="group-title">调料/其他</div>
-                        ${otherIng.join('')}
-                    </div>`;
-                }
-            }
-            
-            cartListEl.innerHTML = html;
-        }
+                });
+            });
 
-        // 9. 切换购物车显示/隐藏
-        function toggleCart() {
-            const cartDrawer = document.getElementById('cartDrawer');
-            cartDrawer.classList.toggle('active');
-            // 每次打开都更新购物车UI
-            updateCartUI();
-        }
-
-        // 10. 打开制作方法弹窗
-        function openMethodModal(dishId) {
-            const dish = dishes.find(d => d.id === dishId);
-            if (!dish) return;
-            
-            const modal = document.getElementById('methodModal');
-            const modalImgPlaceholder = document.getElementById('modalImgPlaceholder');
-            const modalImg = document.getElementById('modalImgSrc');
-            const modalName = document.getElementById('modalDishName');
-            const modalSteps = document.getElementById('modalSteps');
-            
-            // 设置内容
-            modalName.textContent = dish.name;
-            modalSteps.textContent = dish.method;
-            
-            // 处理图片
-            if (dish.img) {
-                modalImgPlaceholder.style.display = 'none';
-                modalImg.style.display = 'block';
-                modalImg.src = dish.img;
+            const modalContent = document.getElementById('cartDetailContent');
+            if (Object.keys(cartMap).length === 0) {
+                modalContent.innerHTML = '<div style="text-align:center; color:#999; padding:20px">购物车是空的</div>';
             } else {
-                modalImgPlaceholder.style.display = 'flex';
-                modalImg.style.display = 'none';
+                modalContent.innerHTML = Object.keys(cartMap).map(name => {
+                    const item = cartMap[name];
+                    return `
+                        <div class="cart-item-row">
+                            <div class="cart-item-name">${name}</div>
+                            <div class="cart-item-amount">${item.num}${item.unit}</div>
+                        </div>
+                    `;
+                }).join('');
             }
-            
-            // 显示弹窗
-            modal.style.display = 'flex';
+
+            document.getElementById('cartModal').style.display = 'flex';
         }
 
-        // 11. 关闭制作方法弹窗
-        function closeModal() {
+        function closeCartModal() {
+            document.getElementById('cartModal').style.display = 'none';
+        }
+
+        function clearCart() {
+            dishData.forEach(d => d.count = 0);
+            saveToLocalStorage();
+            renderDishes();
+            updateCartBar();
+            closeCartModal();
+        }
+
+        // 10. 制作方法弹窗
+        function openMethodModal(id) {
+            const dish = dishData.find(d => d.id === id);
+            if (dish) {
+                document.getElementById('methodDishName').innerText = dish.name;
+                document.getElementById('methodSteps').innerText = dish.method;
+                document.getElementById('methodModal').style.display = 'flex';
+            }
+        }
+
+        function closeMethodModal() {
             document.getElementById('methodModal').style.display = 'none';
         }
 
-        // 12. 点击弹窗外部关闭
-        document.getElementById('methodModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
+        // 11. 添加/编辑弹窗逻辑
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('editModalTitle').innerText = '添加新菜品';
+            document.getElementById('editDishId').value = '';
+            document.getElementById('editName').value = '';
+            document.getElementById('editIngredients').value = '';
+            document.getElementById('editMethod').value = '';
+            document.getElementById('editModal').style.display = 'flex';
+        }
 
-        // 13. 添加菜品图片上传功能（可扩展）
-        window.uploadDishImage = function(dishId) {
-            // 创建隐藏的文件输入框
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const dish = dishes.find(d => d.id === dishId);
-                    if (dish) {
-                        dish.img = event.target.result;
-                        localStorage.setItem('familyDishes', JSON.stringify(dishes));
-                        // 重新渲染
-                        renderDishes(document.querySelector('.category-tab.active').dataset.cat);
-                    }
-                };
-                reader.readAsDataURL(file);
-            };
-            input.click();
-        };
+        function openEditModal(id) {
+            const dish = dishData.find(d => d.id === id);
+            if (dish) {
+                editingId = id;
+                document.getElementById('editModalTitle').innerText = '编辑菜品';
+                document.getElementById('editDishId').value = id;
+                document.getElementById('editName').value = dish.name;
+                document.getElementById('editCategory').value = dish.cat;
+                document.getElementById('editIngredients').value = dish.ingredients;
+                document.getElementById('editMethod').value = dish.method;
+                document.getElementById('editModal').style.display = 'flex';
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveDish() {
+            const name = document.getElementById('editName').value.trim();
+            const cat = document.getElementById('editCategory').value;
+            const ingredients = document.getElementById('editIngredients').value.trim();
+            const method = document.getElementById('editMethod').value.trim();
+
+            if (!name || !ingredients) {
+                alert('请输入菜名和食材');
+                return;
+            }
+
+            if (editingId !== null) {
+                // 编辑模式
+                const index = dishData.findIndex(d => d.id === editingId);
+                if (index !== -1) {
+                    dishData[index] = { ...dishData[index], name, cat, ingredients, method };
+                }
+            } else {
+                // 添加模式
+                const newId = Date.now(); // 用时间戳做ID
+                dishData.push({
+                    id: newId,
+                    name,
+                    cat,
+                    ingredients,
+                    method,
+                    count: 0
+                });
+            }
+
+            saveToLocalStorage();
+            renderDishes();
+            closeEditModal();
+        }
+
+        // 12. 本地存储
+        function saveToLocalStorage() {
+            localStorage.setItem('familyDishData', JSON.stringify(dishData));
+        }
+
+        // 启动
+        init();
+
     </script>
 </body>
 </html>
