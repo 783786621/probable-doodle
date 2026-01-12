@@ -3,274 +3,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭点餐+食材统计</title>
+    <title>家庭点餐食材管理系统</title>
     <style>
-        * {margin: 0; padding: 0; box-sizing: border-box; font-family: 微软雅黑;}
-        body {max-width: 700px; margin: 0 auto; padding: 20px; background: #f5f5f5;}
-        .container {background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;}
-        h2 {color: #2c3e50; margin-bottom: 20px; text-align: center;}
-        .dish-item {border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px;}
-        .dish-title {display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;}
-        .dish-name {font-size: 18px; font-weight: 600; color: #34495e;}
-        .dish-price {color: #e74c3c;}
-        .ingredient-item {margin: 5px 0; font-size: 14px; color: #7f8c8d;}
-        .count-input {width: 60px; padding: 5px; margin-left: 10px; border: 1px solid #ddd; border-radius: 4px; text-align: center;}
-        .btn {padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;}
-        .btn-primary {background: #3498db; color: white;}
-        .btn-danger {background: #e74c3c; color: white;}
-        .btn-add {background: #2ecc71; color: white; margin-bottom: 15px;}
-        .total-ingredients {background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;}
-        .total-title {font-weight: 600; margin-bottom: 10px; color: #2c3e50;}
-        .ingredient-total-item {padding: 5px 0; border-bottom: 1px dashed #eee;}
-        .modal {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 999;}
-        .modal-content {background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px;}
+        /* 全局样式 */
+        * {margin: 0; padding: 0; box-sizing: border-box; font-family: PingFang SC, Microsoft YaHei, sans-serif;}
+        body {background: #f5f5f5; color: #333;}
+        a {text-decoration: none; color: inherit;}
+        button {cursor: pointer; border: none;}
+        input {outline: none;}
+        
+        /* 顶部导航栏（仿美团） */
+        .header {background: #ff6700; color: white; padding: 10px 15px; position: fixed; top: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+        .nav {display: flex; justify-content: space-around; background: white; padding: 10px 0; margin-top: 50px; border-bottom: 1px solid #eee;}
+        .nav-item {padding: 8px 15px; border-radius: 20px; font-size: 15px;}
+        .nav-item.active {background: #fff0e6; color: #ff6700; font-weight: 600;}
+        
+        /* 主容器 */
+        .container {max-width: 750px; margin: 0 auto; padding: 15px; margin-top: 20px;}
+        
+        /* 分类标签 */
+        .category-tabs {display: flex; overflow-x: auto; padding: 10px 0; gap: 10px; margin-bottom: 10px;}
+        .category-tab {white-space: nowrap; padding: 8px 15px; background: white; border-radius: 20px; font-size: 14px;}
+        .category-tab.active {background: #ff6700; color: white;}
+        
+        /* 菜品卡片（仿美团样式） */
+        .dish-list {display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;}
+        .dish-card {background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);}
+        .dish-img {width: 100%; height: 120px; object-fit: cover;}
+        .dish-info {padding: 10px;}
+        .dish-name {font-size: 15px; font-weight: 600; margin-bottom: 5px;}
+        .dish-price {color: #ff6700; font-weight: 600;}
+        .dish-ingredients {font-size: 12px; color: #999; margin: 5px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        .dish-action {display: flex; justify-content: space-between; align-items: center; margin-top: 10px;}
+        .add-btn {background: #ff6700; color: white; border-radius: 15px; padding: 3px 10px; font-size: 12px;}
+        
+        /* 买菜清单页面 */
+        .shopping-list {background: white; border-radius: 8px; padding: 15px; margin-bottom: 20px;}
+        .list-title {font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #ff6700;}
+        .ingredient-item {display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;}
+        .ingredient-name {font-size: 16px;}
+        .ingredient-amount {display: flex; align-items: center; gap: 10px;}
+        .amount-input {width: 80px; padding: 5px; border: 1px solid #eee; border-radius: 4px; text-align: center;}
+        .unit {color: #999;}
+        .delete-ingredient {color: #ff4444; font-size: 12px;}
+        
+        /* 菜品管理页面 */
+        .manage-container {background: white; border-radius: 8px; padding: 15px;}
+        .add-dish-btn {background: #ff6700; color: white; width: 100%; padding: 12px; border-radius: 8px; font-size: 16px; margin-bottom: 20px;}
+        .manage-dish-item {display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee;}
+        .manage-dish-info {flex: 1;}
+        .manage-dish-name {font-size: 16px; font-weight: 600;}
+        .manage-dish-category {font-size: 12px; color: #999; margin-top: 5px;}
+        .manage-dish-actions {display: flex; gap: 10px;}
+        .edit-btn {background: #4285f4; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px;}
+        .remove-btn {background: #ff4444; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px;}
+        
+        /* 弹窗样式 */
+        .modal {position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 999;}
+        .modal-content {background: white; border-radius: 8px; width: 90%; max-width: 500px; padding: 20px;}
+        .modal-title {font-size: 18px; font-weight: 600; margin-bottom: 20px; text-align: center;}
         .form-item {margin-bottom: 15px;}
-        .form-item label {display: block; margin-bottom: 5px; color: #34495e;}
-        .form-item input {width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;}
-        .ingredient-add-box {margin-top: 10px; padding: 10px; border: 1px dashed #ddd; border-radius: 4px;}
-        .ingredient-list {margin-top: 10px;}
+        .form-label {display: block; font-size: 14px; margin-bottom: 5px;}
+        .form-input {width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 4px; font-size: 14px;}
+        .form-select {width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 4px; font-size: 14px;}
+        .modal-actions {display: flex; gap: 10px; margin-top: 20px;}
+        .modal-btn {flex: 1; padding: 10px; border-radius: 4px; font-size: 16px;}
+        .cancel-btn {background: #eee; color: #333;}
+        .confirm-btn {background: #ff6700; color: white;}
+        
+        /* 空状态 */
+        .empty-state {text-align: center; padding: 40px 0; color: #999;}
+        .empty-icon {font-size: 40px; margin-bottom: 10px;}
+        
+        /* 适配小屏幕 */
+        @media (max-width: 480px) {
+            .dish-list {grid-template-columns: 1fr;}
+            .dish-img {height: 150px;}
+        }
     </style>
 </head>
 <body>
-    <!-- 点餐统计区 -->
-    <div class="container">
-        <h2>🍽️ 家庭点餐+食材统计</h2>
-        <button class="btn btn-add" onclick="openAddDishModal()">+ 添加新菜品</button>
-        <div id="dishList">
-            <!-- 菜品列表会自动生成 -->
+    <!-- 顶部导航 -->
+    <div class="header">
+        <h1 style="text-align: center; font-size: 18px;">家庭点餐食材管理系统</h1>
+    </div>
+    
+    <!-- 页面导航 -->
+    <div class="nav">
+        <div class="nav-item active" onclick="switchPage('order')">点餐</div>
+        <div class="nav-item" onclick="switchPage('shopping')">买菜清单</div>
+        <div class="nav-item" onclick="switchPage('manage')">菜品管理</div>
+    </div>
+    
+    <!-- 点餐页面 -->
+    <div id="orderPage" class="container">
+        <!-- 分类标签 -->
+        <div class="category-tabs">
+            <div class="category-tab active" data-category="all">全部</div>
+            <div class="category-tab" data-category="meat">荤菜</div>
+            <div class="category-tab" data-category="vegetable">素菜</div>
+            <div class="category-tab" data-category="soup">汤类</div>
+            <div class="category-tab" data-category="dessert">甜品</div>
+            <div class="category-tab" data-category="drink">饮品</div>
         </div>
-        <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="calculateTotalIngredients()">📊 统计食材总用量</button>
         
-        <!-- 食材统计结果 -->
-        <div class="total-ingredients" id="totalIngredients" style="display: none;">
-            <div class="total-title">🛒 买菜清单（总用量）</div>
-            <div id="ingredientTotalList"></div>
+        <!-- 菜品列表 -->
+        <div class="dish-list" id="orderDishList">
+            <!-- 菜品卡片会自动生成 -->
         </div>
     </div>
-
-    <!-- 添加/修改菜品弹窗 -->
+    
+    <!-- 买菜清单页面 -->
+    <div id="shoppingPage" class="container" style="display: none;">
+        <div class="shopping-list">
+            <div class="list-title">🛒 买菜清单（统一按克计算）</div>
+            <div id="ingredientList">
+                <!-- 食材项会自动生成 -->
+            </div>
+        </div>
+        <button class="add-dish-btn" onclick="clearAllIngredients()">清空清单</button>
+    </div>
+    
+    <!-- 菜品管理页面 -->
+    <div id="managePage" class="container" style="display: none;">
+        <div class="manage-container">
+            <button class="add-dish-btn" onclick="openAddDishModal()">+ 添加新菜品</button>
+            <div id="manageDishList">
+                <!-- 管理菜品列表会自动生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加/编辑菜品弹窗 -->
     <div class="modal" id="dishModal">
         <div class="modal-content">
-            <h3 id="modalTitle">添加新菜品</h3>
+            <div class="modal-title" id="modalTitle">添加新菜品</div>
             <input type="hidden" id="editDishId">
+            
             <div class="form-item">
-                <label>菜品名称：</label>
-                <input type="text" id="dishName" placeholder="比如：可乐鸡翅">
+                <label class="form-label">菜品名称</label>
+                <input type="text" class="form-input" id="dishName" placeholder="例如：可乐鸡翅">
             </div>
+            
             <div class="form-item">
-                <label>菜品价格（元）：</label>
-                <input type="number" id="dishPrice" placeholder="比如：38" min="0">
+                <label class="form-label">菜品分类</label>
+                <select class="form-select" id="dishCategory">
+                    <option value="meat">荤菜</option>
+                    <option value="vegetable">素菜</option>
+                    <option value="soup">汤类</option>
+                    <option value="dessert">甜品</option>
+                    <option value="drink">饮品</option>
+                </select>
             </div>
+            
             <div class="form-item">
-                <label>菜品配料（格式：食材名 用量，多个用逗号分隔）：</label>
-                <input type="text" id="dishIngredients" placeholder="比如：鸡翅 500g,姜 10g,可乐 200ml,蒜 5g">
-                <small style="color: #999;">示例：鱼 1条,小米辣 5个,姜 15g,蒜 10g</small>
+                <label class="form-label">菜品价格（元）</label>
+                <input type="number" class="form-input" id="dishPrice" placeholder="例如：38" min="0">
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-danger" onclick="closeDishModal()">取消</button>
-                <button class="btn btn-primary" onclick="saveDish()">保存菜品</button>
+            
+            <div class="form-item">
+                <label class="form-label">菜品食材（格式：食材名 克数，多个用逗号分隔）</label>
+                <input type="text" class="form-input" id="dishIngredients" placeholder="例如：鸡翅 500,姜 10,可乐 200,蒜 5">
+                <small style="color: #999; font-size: 12px;">所有食材统一按克计算，液体类也按克（1ml≈1g）</small>
+            </div>
+            
+            <div class="form-item">
+                <label class="form-label">菜品图片URL（可选）</label>
+                <input type="text" class="form-input" id="dishImage" placeholder="输入图片链接，留空使用默认图">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" onclick="closeDishModal()">取消</button>
+                <button class="modal-btn confirm-btn" onclick="saveDish()">保存</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 存储菜品数据（本地存储，刷新不丢失）
+        // 全局数据存储
+        let currentPage = 'order';
         let dishData = JSON.parse(localStorage.getItem('familyDishData')) || [
             // 初始示例菜品
             {
                 id: 1,
                 name: "可乐鸡翅",
+                category: "meat",
                 price: 38,
-                ingredients: "鸡翅 500g,姜 10g,可乐 200ml,蒜 5g"
+                ingredients: "鸡翅 500,姜 10,可乐 200,蒜 5",
+                image: "https://img-blog.csdnimg.cn/20240101120000.jpg"
             },
             {
                 id: 2,
                 name: "番茄炒蛋",
+                category: "vegetable",
                 price: 18,
-                ingredients: "番茄 2个,鸡蛋 3个,盐 2g,糖 5g"
+                ingredients: "番茄 300,鸡蛋 150,盐 2,糖 5",
+                image: "https://img-blog.csdnimg.cn/20240101120100.jpg"
             },
             {
                 id: 3,
-                name: "清蒸鲈鱼",
-                price: 45,
-                ingredients: "鲈鱼 1条,姜 15g,蒜 10g,小米辣 3个,葱 1根"
+                name: "冬瓜排骨汤",
+                category: "soup",
+                price: 28,
+                ingredients: "排骨 400,冬瓜 300,姜 15,盐 3",
+                image: "https://img-blog.csdnimg.cn/20240101120200.jpg"
+            },
+            {
+                id: 4,
+                name: "双皮奶",
+                category: "dessert",
+                price: 12,
+                ingredients: "牛奶 250,鸡蛋 50,糖 20",
+                image: "https://img-blog.csdnimg.cn/20240101120300.jpg"
+            },
+            {
+                id: 5,
+                name: "柠檬茶",
+                category: "drink",
+                price: 8,
+                ingredients: "柠檬 100,茶 5,糖 15,水 300",
+                image: "https://img-blog.csdnimg.cn/20240101120400.jpg"
             }
         ];
-
-        // 页面加载时渲染菜品列表
+        
+        // 买菜清单数据
+        let ingredientList = JSON.parse(localStorage.getItem('familyIngredientList')) || {};
+        
+        // 页面加载初始化
         window.onload = function() {
-            renderDishList();
-        };
-
-        // 渲染菜品列表
-        function renderDishList() {
-            const dishListEl = document.getElementById('dishList');
-            dishListEl.innerHTML = '';
-
-            dishData.forEach(dish => {
-                // 解析配料
-                const ingredients = dish.ingredients.split(',').map(item => item.trim());
-                
-                let ingredientHtml = '';
-                ingredients.forEach(ing => {
-                    ingredientHtml += `<div class="ingredient-item">🔸 ${ing}</div>`;
+            renderOrderPage();
+            renderShoppingPage();
+            renderManagePage();
+            
+            // 分类标签点击事件
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    renderOrderPage(this.dataset.category);
                 });
-
-                // 生成菜品项
-                const dishItem = `
-                    <div class="dish-item" id="dish_${dish.id}">
-                        <div class="dish-title">
-                            <span class="dish-name">${dish.name}</span>
-                            <span class="dish-price">¥${dish.price}</span>
-                        </div>
-                        <div>${ingredientHtml}</div>
-                        <div style="margin-top: 10px; display: flex; align-items: center;">
-                            <span>份数：</span>
-                            <input type="number" class="count-input" id="count_${dish.id}" value="0" min="0">
-                            <div style="margin-left: auto; display: flex; gap: 8px;">
-                                <button class="btn btn-primary" onclick="editDish(${dish.id})">修改</button>
-                                <button class="btn btn-danger" onclick="deleteDish(${dish.id})">删除</button>
+            });
+        };
+        
+        // 切换页面
+        function switchPage(page) {
+            currentPage = page;
+            
+            // 隐藏所有页面
+            document.getElementById('orderPage').style.display = 'none';
+            document.getElementById('shoppingPage').style.display = 'none';
+            document.getElementById('managePage').style.display = 'none';
+            
+            // 切换导航样式
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`.nav-item[onclick="switchPage('${page}')"]`).classList.add('active');
+            
+            // 显示对应页面
+            document.getElementById(`${page}Page`).style.display = 'block';
+            
+            // 刷新页面数据
+            if (page === 'order') renderOrderPage();
+            if (page === 'shopping') renderShoppingPage();
+            if (page === 'manage') renderManagePage();
+        }
+        
+        // 渲染点餐页面
+        function renderOrderPage(category = 'all') {
+            const dishListEl = document.getElementById('orderDishList');
+            dishListEl.innerHTML = '';
+            
+            // 筛选菜品
+            let filteredDishes = dishData;
+            if (category !== 'all') {
+                filteredDishes = dishData.filter(dish => dish.category === category);
+            }
+            
+            if (filteredDishes.length === 0) {
+                dishListEl.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">🍽️</div>
+                        <div>暂无该分类菜品</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 生成菜品卡片
+            filteredDishes.forEach(dish => {
+                // 处理默认图片
+                const imgUrl = dish.image || 'https://img-blog.csdnimg.cn/20240101120500.jpg';
+                
+                // 解析食材为简洁格式
+                const ingredients = dish.ingredients.split(',').map(item => {
+                    const [name, amount] = item.trim().split(' ');
+                    return `${name} ${amount}g`;
+                }).join('，');
+                
+                const dishCard = `
+                    <div class="dish-card">
+                        <img src="${imgUrl}" alt="${dish.name}" class="dish-img">
+                        <div class="dish-info">
+                            <div class="dish-name">${dish.name}</div>
+                            <div class="dish-price">¥${dish.price}</div>
+                            <div class="dish-ingredients">食材：${ingredients}</div>
+                            <div class="dish-action">
+                                <span>${getCategoryName(dish.category)}</span>
+                                <button class="add-btn" onclick="addToShoppingList(${dish.id})">加入采购</button>
                             </div>
                         </div>
                     </div>
                 `;
-                dishListEl.innerHTML += dishItem;
+                dishListEl.innerHTML += dishCard;
             });
-
-            // 保存数据到本地
-            localStorage.setItem('familyDishData', JSON.stringify(dishData));
         }
-
+        
+        // 渲染买菜清单页面
+        function renderShoppingPage() {
+            const ingredientListEl = document.getElementById('ingredientList');
+            ingredientListEl.innerHTML = '';
+            
+            if (Object.keys(ingredientList).length === 0) {
+                ingredientListEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🛒</div>
+                        <div>暂无采购食材，快去点餐页面添加吧</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 生成食材列表
+            for (const [name, amount] of Object.entries(ingredientList)) {
+                const ingredientItem = `
+                    <div class="ingredient-item">
+                        <div class="ingredient-name">${name}</div>
+                        <div class="ingredient-amount">
+                            <input type="number" class="amount-input" value="${amount}" min="0" onchange="updateIngredientAmount('${name}', this.value)">
+                            <span class="unit">克</span>
+                            <span class="delete-ingredient" onclick="deleteIngredient('${name}')">删除</span>
+                        </div>
+                    </div>
+                `;
+                ingredientListEl.innerHTML += ingredientItem;
+            }
+        }
+        
+        // 渲染菜品管理页面
+        function renderManagePage() {
+            const manageListEl = document.getElementById('manageDishList');
+            manageListEl.innerHTML = '';
+            
+            if (dishData.length === 0) {
+                manageListEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div>暂无菜品，点击添加按钮创建吧</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 生成管理列表
+            dishData.forEach(dish => {
+                const manageItem = `
+                    <div class="manage-dish-item">
+                        <div class="manage-dish-info">
+                            <div class="manage-dish-name">${dish.name}</div>
+                            <div class="manage-dish-category">分类：${getCategoryName(dish.category)} | 价格：¥${dish.price}</div>
+                        </div>
+                        <div class="manage-dish-actions">
+                            <button class="edit-btn" onclick="openEditDishModal(${dish.id})">编辑</button>
+                            <button class="remove-btn" onclick="deleteDish(${dish.id})">删除</button>
+                        </div>
+                    </div>
+                `;
+                manageListEl.innerHTML += manageItem;
+            });
+        }
+        
+        // 添加菜品到采购清单
+        function addToShoppingList(dishId) {
+            const dish = dishData.find(d => d.id === dishId);
+            if (!dish) return;
+            
+            // 解析食材
+            const ingredients = dish.ingredients.split(',').map(item => item.trim());
+            ingredients.forEach(item => {
+                const [name, amount] = item.split(' ');
+                const num = parseFloat(amount);
+                
+                if (ingredientList[name]) {
+                    ingredientList[name] += num;
+                } else {
+                    ingredientList[name] = num;
+                }
+            });
+            
+            // 保存并刷新
+            localStorage.setItem('familyIngredientList', JSON.stringify(ingredientList));
+            renderShoppingPage();
+            
+            // 提示
+            alert(`${dish.name}的食材已添加到采购清单！`);
+        }
+        
+        // 更新食材数量
+        function updateIngredientAmount(name, amount) {
+            const num = parseFloat(amount) || 0;
+            ingredientList[name] = num;
+            
+            // 移除数量为0的食材
+            if (num <= 0) {
+                delete ingredientList[name];
+            }
+            
+            localStorage.setItem('familyIngredientList', JSON.stringify(ingredientList));
+            renderShoppingPage();
+        }
+        
+        // 删除食材
+        function deleteIngredient(name) {
+            if (confirm(`确定要删除${name}吗？`)) {
+                delete ingredientList[name];
+                localStorage.setItem('familyIngredientList', JSON.stringify(ingredientList));
+                renderShoppingPage();
+            }
+        }
+        
+        // 清空所有食材
+        function clearAllIngredients() {
+            if (confirm('确定要清空整个采购清单吗？')) {
+                ingredientList = {};
+                localStorage.setItem('familyIngredientList', JSON.stringify(ingredientList));
+                renderShoppingPage();
+            }
+        }
+        
         // 打开添加菜品弹窗
         function openAddDishModal() {
             document.getElementById('modalTitle').innerText = '添加新菜品';
             document.getElementById('editDishId').value = '';
             document.getElementById('dishName').value = '';
+            document.getElementById('dishCategory').value = 'meat';
             document.getElementById('dishPrice').value = '';
             document.getElementById('dishIngredients').value = '';
+            document.getElementById('dishImage').value = '';
             document.getElementById('dishModal').style.display = 'flex';
         }
-
+        
+        // 打开编辑菜品弹窗
+        function openEditDishModal(dishId) {
+            const dish = dishData.find(d => d.id === dishId);
+            if (!dish) return;
+            
+            document.getElementById('modalTitle').innerText = '编辑菜品';
+            document.getElementById('editDishId').value = dishId;
+            document.getElementById('dishName').value = dish.name;
+            document.getElementById('dishCategory').value = dish.category;
+            document.getElementById('dishPrice').value = dish.price;
+            document.getElementById('dishIngredients').value = dish.ingredients;
+            document.getElementById('dishImage').value = dish.image || '';
+            document.getElementById('dishModal').style.display = 'flex';
+        }
+        
         // 关闭弹窗
         function closeDishModal() {
             document.getElementById('dishModal').style.display = 'none';
         }
-
-        // 保存菜品（新增/修改）
+        
+        // 保存菜品
         function saveDish() {
-            const dishName = document.getElementById('dishName').value.trim();
-            const dishPrice = document.getElementById('dishPrice').value.trim();
-            const dishIngredients = document.getElementById('dishIngredients').value.trim();
-            const editDishId = document.getElementById('editDishId').value;
-
-            // 验证必填项
-            if (!dishName || !dishPrice || !dishIngredients) {
-                alert('菜品名称、价格、配料都不能为空！');
+            const dishId = document.getElementById('editDishId').value;
+            const name = document.getElementById('dishName').value.trim();
+            const category = document.getElementById('dishCategory').value;
+            const price = parseFloat(document.getElementById('dishPrice').value) || 0;
+            const ingredients = document.getElementById('dishIngredients').value.trim();
+            const image = document.getElementById('dishImage').value.trim();
+            
+            // 验证
+            if (!name || !ingredients) {
+                alert('菜品名称和食材不能为空！');
                 return;
             }
-
-            if (editDishId) {
-                // 修改现有菜品
-                const index = dishData.findIndex(d => d.id == editDishId);
+            
+            if (dishId) {
+                // 编辑现有菜品
+                const index = dishData.findIndex(d => d.id == dishId);
                 dishData[index] = {
-                    id: parseInt(editDishId),
-                    name: dishName,
-                    price: parseFloat(dishPrice),
-                    ingredients: dishIngredients
+                    id: parseInt(dishId),
+                    name,
+                    category,
+                    price,
+                    ingredients,
+                    image
                 };
             } else {
-                // 新增菜品（自动生成ID）
+                // 添加新菜品
                 const newId = dishData.length > 0 ? Math.max(...dishData.map(d => d.id)) + 1 : 1;
                 dishData.push({
                     id: newId,
-                    name: dishName,
-                    price: parseFloat(dishPrice),
-                    ingredients: dishIngredients
+                    name,
+                    category,
+                    price,
+                    ingredients,
+                    image
                 });
             }
-
-            // 重新渲染列表并关闭弹窗
-            renderDishList();
+            
+            // 保存并刷新
+            localStorage.setItem('familyDishData', JSON.stringify(dishData));
+            renderOrderPage();
+            renderManagePage();
             closeDishModal();
+            
             alert('菜品保存成功！');
         }
-
-        // 编辑菜品
-        function editDish(dishId) {
-            const dish = dishData.find(d => d.id === dishId);
-            if (!dish) return;
-
-            document.getElementById('modalTitle').innerText = '修改菜品';
-            document.getElementById('editDishId').value = dishId;
-            document.getElementById('dishName').value = dish.name;
-            document.getElementById('dishPrice').value = dish.price;
-            document.getElementById('dishIngredients').value = dish.ingredients;
-            document.getElementById('dishModal').style.display = 'flex';
-        }
-
+        
         // 删除菜品
         function deleteDish(dishId) {
             if (confirm('确定要删除这个菜品吗？')) {
                 dishData = dishData.filter(d => d.id !== dishId);
-                renderDishList();
+                localStorage.setItem('familyDishData', JSON.stringify(dishData));
+                renderOrderPage();
+                renderManagePage();
                 alert('菜品删除成功！');
             }
         }
-
-        // 统计食材总用量
-        function calculateTotalIngredients() {
-            const totalIngredients = {};
-
-            // 遍历所有菜品，计算配料总用量
-            dishData.forEach(dish => {
-                const count = parseInt(document.getElementById(`count_${dish.id}`).value) || 0;
-                if (count <= 0) return;
-
-                // 解析配料
-                const ingredients = dish.ingredients.split(',').map(item => item.trim());
-                ingredients.forEach(ing => {
-                    // 拆分食材名和用量（处理“鱼 1条”“姜 15g”等格式）
-                    const [name, unitAmount] = ing.split(/\s+/);
-                    if (!name || !unitAmount) return;
-
-                    // 提取数字和单位（比如“500g”拆成500和g，“1条”拆成1和条）
-                    const num = parseFloat(unitAmount.match(/\d+(\.\d+)?/)[0]);
-                    const unit = unitAmount.replace(/\d+(\.\d+)?/, '').trim();
-                    const totalNum = num * count;
-
-                    // 汇总
-                    if (totalIngredients[name]) {
-                        // 同单位直接加，不同单位暂存（家庭用默认同单位）
-                        if (totalIngredients[name].unit === unit) {
-                            totalIngredients[name].amount += totalNum;
-                        } else {
-                            totalIngredients[name].amount = `${totalIngredients[name].amount}${totalIngredients[name].unit} + ${totalNum}${unit}`;
-                        }
-                    } else {
-                        totalIngredients[name] = {
-                            amount: totalNum,
-                            unit: unit
-                        };
-                    }
-                });
-            });
-
-            // 渲染统计结果
-            const totalListEl = document.getElementById('ingredientTotalList');
-            totalListEl.innerHTML = '';
-
-            if (Object.keys(totalIngredients).length === 0) {
-                totalListEl.innerHTML = '<div style="text-align: center; color: #999;">暂无选中的菜品，请先选择份数～</div>';
-            } else {
-                for (const [name, info] of Object.entries(totalIngredients)) {
-                    let amountStr = typeof info.amount === 'number' ? `${info.amount}${info.unit}` : info.amount;
-                    totalListEl.innerHTML += `<div class="ingredient-total-item">✅ ${name}：${amountStr}</div>`;
-                }
-            }
-
-            // 显示统计结果
-            document.getElementById('totalIngredients').style.display = 'block';
+        
+        // 获取分类名称
+        function getCategoryName(category) {
+            const categoryMap = {
+                meat: '荤菜',
+                vegetable: '素菜',
+                soup: '汤类',
+                dessert: '甜品',
+                drink: '饮品'
+            };
+            return categoryMap[category] || '其他';
         }
     </script>
-</body>
-</html>
